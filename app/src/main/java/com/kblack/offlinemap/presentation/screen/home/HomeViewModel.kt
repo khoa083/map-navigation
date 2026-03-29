@@ -18,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -26,6 +27,7 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
+import kotlin.collections.copy
 
 data class MapManagerUiState(
     val maps: List<MapModel> = emptyList(),
@@ -37,7 +39,7 @@ data class MapManagerUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val remoteDataSource: MapListRemoteDataSource,
-    private val downloadRepository: MapDownloadRepository,
+    private val downloadMapRepository: MapDownloadRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -45,7 +47,7 @@ class HomeViewModel @Inject constructor(
     private val ALLOWLIST_FILENAME = "map_allowlist.json"
 
     private val externalFilesDir = context.getExternalFilesDir(null)
-    protected val _uiState = MutableStateFlow(createEmptyUiState())
+    private val _uiState = MutableStateFlow(createEmptyUiState())
     val uiState = _uiState.asStateFlow()
 
     fun deleteMap(map: MapModel) {
@@ -62,20 +64,20 @@ class HomeViewModel @Inject constructor(
 
     fun downloadMap(map: MapModel) {
         setDownloadStatus(
-            curMap = map,
+            map = map,
             status = MapDownloadStatus(status = MapDownloadStatusType.IN_PROGRESS),
         )
 
         deleteMap(map)
 
-        downloadRepository.downloadMap(
+        downloadMapRepository.downloadMap(
             map = map,
             onStatusUpdated = ::setDownloadStatus,
         )
     }
 
     fun cancelDownloadMap(map: MapModel) {
-        downloadRepository.cancelDownloadMap(map)
+        downloadMapRepository.cancelDownloadMap(map)
         deleteMap(map)
     }
 
@@ -90,15 +92,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun setDownloadStatus(curMap: MapModel, status: MapDownloadStatus) {
+    fun setDownloadStatus(map: MapModel, status: MapDownloadStatus) {
         val curMapDownloadStatus = uiState.value.mapDownloadStatus.toMutableMap()
-        curMapDownloadStatus[curMap.mapId] = status
+        curMapDownloadStatus[map.mapId] = status
 
         if (
             status.status == MapDownloadStatusType.FAILED ||
             status.status == MapDownloadStatusType.NOT_DOWNLOADED
         ) {
-            deleteFileFromExternalFilesDir(curMap.downloadFileName)
+//            deleteFileFromExternalFilesDir(map.downloadFileName)
+            deleteDirFromExternalFilesDir(map.normalizedName)
         }
 
         _uiState.update { uiState.value.copy(mapDownloadStatus = curMapDownloadStatus) }
@@ -128,7 +131,9 @@ class HomeViewModel @Inject constructor(
 
                 if (mapAllowlist == null) {
                     _uiState.update {
-                        uiState.value.copy(loadingMapAllowlistError = "Failed to load map list")
+                        uiState.value.copy(
+                            loadingMapAllowlist = false,
+                            loadingMapAllowlistError = "Failed to load map list")
                     }
                     return@launch
                 }
@@ -152,7 +157,12 @@ class HomeViewModel @Inject constructor(
                 processPendingDownloads(maps)
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                _uiState.update {
+                    it.copy(
+                        loadingMapAllowlist = false,
+                        loadingMapAllowlistError = e.message ?: "Failed to load map list"
+                    )
+                }
             }
         }
     }
@@ -189,12 +199,12 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun processPendingDownloads(maps: List<MapModel>) {
-        downloadRepository.cancelAll {
+        downloadMapRepository.cancelAll {
             viewModelScope.launch(Main) {
                 for (map in maps) {
                     val downloadStatus = uiState.value.mapDownloadStatus[map.mapId]?.status
                     if (downloadStatus == MapDownloadStatusType.PARTIALLY_DOWNLOADED) {
-                        downloadRepository.downloadMap(
+                        downloadMapRepository.downloadMap(
                             map = map,
                             onStatusUpdated = ::setDownloadStatus,
                         )
@@ -259,18 +269,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // clear folder and all its contents
     private fun deleteDirFromExternalFilesDir(dir: String) {
         if (isFileInExternalFilesDir(dir)) {
             File(externalFilesDir, dir).deleteRecursively()
         }
-    }
-
-    fun getStyleJsonPath(map: MapModel): String? {
-        val file = File(externalFilesDir, "${map.normalizedName}/style_runtime.json")
-        return if (file.exists()) file.absolutePath else null
-    }
-    fun getGraphPath(map: MapModel): String? {
-        val file = File(externalFilesDir, "${map.normalizedName}/graph-cache")
-        return if (file.exists()) file.absolutePath else null
     }
 }

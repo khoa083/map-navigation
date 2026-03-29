@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.Data
@@ -37,10 +39,11 @@ import java.net.URL
 private const val FOREGROUND_NOTIFICATION_CHANNEL_ID = "map_download_channel_foreground"
 private var channelCreated = false
 
-class WorkerManager(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+class MapDownloadWorker (context: Context, params: WorkerParameters) :
+    CoroutineWorker(context, params) {
 
     private val notificationManager =
-        ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     private val notificationId: Int = params.id.hashCode()
 
@@ -61,7 +64,7 @@ class WorkerManager(ctx: Context, params: WorkerParameters) : CoroutineWorker(ct
         val fileUrl = inputData.getString(KEY_MAP_URL)
         val mapName = inputData.getString(KEY_MAP_NAME) ?: "Map_VietNam"
         val fileName = inputData.getString(KEY_MAP_DOWNLOAD_FILE_NAME)
-        val modelDir = inputData.getString(KEY_MAP_DOWNLOAD_MAP_DIR)!!
+        val mapDir = inputData.getString(KEY_MAP_DOWNLOAD_MAP_DIR)!!
         val totalBytes = inputData.getLong(KEY_MAP_TOTAL_BYTES, 0L)
 
         return withContext(IO) {
@@ -84,11 +87,11 @@ class WorkerManager(ctx: Context, params: WorkerParameters) : CoroutineWorker(ct
 //                    val outputDir =
 //                        File(
 //                            applicationContext.getExternalFilesDir(null),
-//                            listOf(modelDir, version).joinToString(separator = File.separator),
+//                            listOf(mapDir, version).joinToString(separator = File.separator),
 //                        )
                     val outputDir = File(
                         applicationContext.getExternalFilesDir(null),
-                        modelDir
+                        mapDir
                     )
 
                     if (!outputDir.exists()) {
@@ -103,13 +106,13 @@ class WorkerManager(ctx: Context, params: WorkerParameters) : CoroutineWorker(ct
 //                    val outputTmpFile =
 //                        File(
 //                            applicationContext.getExternalFilesDir(null),
-//                            listOf(modelDir, version, "${fileName}.$TMP_FILE_EXT")
+//                            listOf(mapDir, version, "${fileName}.$TMP_FILE_EXT")
 //                                .joinToString(separator = File.separator),
 //                        )
 
                     val outputTmpFile = File(
                         applicationContext.getExternalFilesDir(null),
-                        listOf(modelDir, "${fileName}.$TMP_FILE_EXT").joinToString(File.separator)
+                        listOf(mapDir, "${fileName}.$TMP_FILE_EXT").joinToString(File.separator)
                     )
                     val outputFileBytes = outputTmpFile.length()
 

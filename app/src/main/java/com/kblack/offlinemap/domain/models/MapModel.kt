@@ -1,16 +1,16 @@
 package com.kblack.offlinemap.domain.models
 
-data class MapInitializationStatus(
-    val status: MapInitializationStatusType,
-    var error: String = "",
-)
-
-enum class MapInitializationStatusType {
-    NOT_INITIALIZED,
-    INITIALIZING,
-    INITIALIZED,
-    ERROR,
-}
+//data class MapInitializationStatus(
+//    val status: MapInitializationStatusType,
+//    var error: String = "",
+//)
+//
+//enum class MapInitializationStatusType {
+//    NOT_INITIALIZED,
+//    INITIALIZING,
+//    INITIALIZED,
+//    ERROR,
+//}
 
 enum class MapDownloadStatusType {
     NOT_DOWNLOADED,

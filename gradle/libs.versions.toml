@@ -7,7 +7,7 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.13.0"
 kotlin = "2.3.20"
-composeBom = "2026.03.00"
+composeBom = "2026.03.01"
 kotlinxCoroutines = "1.10.2"
 # hilt
 hilt = "2.59.2"
@@ -35,7 +35,9 @@ data_store = "1.2.1"
 # work manager
 work_manager = "2.11.1"
 # maplibre
-maplibre = "13.0.1"
+#todo https://github.com/maplibre/maplibre-plugins-android?tab=readme-ov-file
+#maplibre = "13.0.1"
+#maplibre-plugin = "3.0.2"
 maplibreCompose = "0.12.1"
 # navigation compose
 navigationCompose = "2.9.7"
@@ -104,7 +106,8 @@ data-store-preferences-core = { module = "androidx.datastore:datastore-preferenc
 # work manager
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work_manager" }
 # maplibre
-maplibre-gl = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibre" }
+#maplibre-gl = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibre" }
+#maplibre-plugin-annotation = { module = "org.maplibre.gl:android-plugin-annotation-v9", version.ref = "maplibre-plugin" }
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibreCompose" }
 # navigation compose
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
@@ -120,7 +123,7 @@ roomDb = ["room-runtime","room-ktx"]
 okhttp = ["okhttp", "logging-interceptor"]
 retrofit2 = ["retrofit2", "retrofit2-converter-moshi"]
 dataStore = ["data-store-preferences", "data-store-preferences-core"]
-maplibre = ["maplibre-gl", "maplibre-compose"]
+maplibre = ["maplibre-compose"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

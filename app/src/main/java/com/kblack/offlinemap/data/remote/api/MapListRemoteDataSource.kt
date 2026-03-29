@@ -5,6 +5,7 @@ import com.kblack.offlinemap.data.model.MapAllowlist
 import java.net.HttpURLConnection
 import java.net.URL
 
+// todo: FIXME - Currently, this simple case only retrieves data from GitHub, configuring Retrofit is not necessary. I will modify it later.
 class MapListRemoteDataSource {
     fun fetchMapAllowlist(url: String): MapAllowlist? {
         return try {

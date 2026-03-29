@@ -50,34 +50,16 @@ fun HomeScreen(
 ) {
 
     val uiState by homeViewModel.uiState.collectAsState()
-    var loadingModelAllowlistDelayed by remember { mutableStateOf(false) }
+    var loadingMapAllowlistDelayed by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.loadingMapAllowlist) {
         if (uiState.loadingMapAllowlist) {
             delay(200)
             if (uiState.loadingMapAllowlist) {
-                loadingModelAllowlistDelayed = true
+                loadingMapAllowlistDelayed = true
             }
         } else {
-            loadingModelAllowlistDelayed = false
-        }
-    }
-
-    if (loadingModelAllowlistDelayed) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            CircularProgressIndicator(
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                strokeWidth = 3.dp,
-                modifier = Modifier.padding(end = 8.dp).size(20.dp),
-            )
-            Text(
-                "Loading map list...",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            loadingMapAllowlistDelayed = false
         }
     }
 
@@ -145,6 +127,8 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surfaceContainer),
         ) {
+
+
             Box(
                 contentAlignment = Alignment.TopCenter,
                 modifier = Modifier
@@ -162,6 +146,23 @@ fun HomeScreen(
                 )
             }
 
+        }
+        if (loadingMapAllowlistDelayed) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                CircularProgressIndicator(
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    strokeWidth = 3.dp,
+                    modifier = Modifier.padding(end = 8.dp).size(20.dp),
+                )
+                Text(
+                    "Loading map list...",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }

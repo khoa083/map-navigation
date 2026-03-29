@@ -16,6 +16,7 @@ data class MapListResponse(
     var continent   : String  = "",
     var allow       : Boolean = true,
 ) {
+    //todo: mapper
     fun toDomain(): MapModel = MapModel(
         mapId = mapId,
         name = name,

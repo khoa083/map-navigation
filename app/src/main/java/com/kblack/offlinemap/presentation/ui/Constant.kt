@@ -21,6 +21,7 @@ object Constant {
 
     const val MAP_NAME_TAG = "mapName"
 
+    //TODO: Since this is an open-source project, the URL is placed here.
     const val BASE_HUGGINGFACE_URL = "https://huggingface.co/datasets/kblack083/mapdata/resolve/main/"
 
     const val ALLOWLIST_URL = "https://raw.githubusercontent.com/khoa083/mapdata/refs/heads/main/map_lists.json"

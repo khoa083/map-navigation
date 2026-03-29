@@ -21,4 +21,7 @@ interface MapDownloadRepository {
         onStatusUpdated: (map: MapModel, status: MapDownloadStatus) -> Unit,
     )
 
+    fun getStyleJsonPath(map: MapModel): String?
+    fun getGraphPath(map: MapModel): String?
+
 }

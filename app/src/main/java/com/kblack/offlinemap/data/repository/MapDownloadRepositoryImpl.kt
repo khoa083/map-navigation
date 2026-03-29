@@ -17,7 +17,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.kblack.offlinemap.data.worker.WorkerManager
+import com.kblack.offlinemap.data.worker.MapDownloadWorker
 import com.kblack.offlinemap.domain.models.MapDownloadStatus
 import com.kblack.offlinemap.domain.models.MapDownloadStatusType
 import com.kblack.offlinemap.domain.models.MapModel
@@ -34,24 +34,28 @@ import com.kblack.offlinemap.presentation.ui.Constant.KEY_MAP_START_UNZIPPING
 import com.kblack.offlinemap.presentation.ui.Constant.KEY_MAP_TOTAL_BYTES
 import com.kblack.offlinemap.presentation.ui.Constant.KEY_MAP_URL
 import com.kblack.offlinemap.presentation.ui.Constant.MAP_NAME_TAG
+import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
-class MapDownloadRepositoryImpl(
+// ko cần @Inject constructor vì đã tạo trong AppModule
+class MapDownloadRepositoryImpl (
     private val context: Context,
     private val lifecycleProvider: AppLifecycleProvider,
+    private val workManager: WorkManager,
 ) : MapDownloadRepository {
-
-    private val workManager = WorkManager.getInstance(context)
 
     private val downloadStartTimeSharedPreferences =
         context.getSharedPreferences("download_start_time_ms", Context.MODE_PRIVATE)
+
+    private val externalFilesDir = context.getExternalFilesDir(null)
 
     override fun downloadMap(
         map: MapModel,
         onStatusUpdated: (map: MapModel, status: MapDownloadStatus) -> Unit
     ) {
-        // Create input data.
+
         val builder = Data.Builder()
         val totalBytes = map.totalBytes
         val inputDataBuilder =
@@ -64,9 +68,8 @@ class MapDownloadRepositoryImpl(
 
         val inputData = inputDataBuilder.build()
 
-        // Create worker request.
         val downloadWorkRequest =
-            OneTimeWorkRequestBuilder<WorkerManager>()
+            OneTimeWorkRequestBuilder<MapDownloadWorker>()
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .setInputData(inputData)
                 .addTag("$MAP_NAME_TAG:${map.name}")
@@ -74,10 +77,8 @@ class MapDownloadRepositoryImpl(
 
         val workerId = downloadWorkRequest.id
 
-        // Start worker!
         workManager.enqueueUniqueWork(map.name, ExistingWorkPolicy.REPLACE, downloadWorkRequest)
 
-        // Observe progress.
         observerWorkerProgress(
             workerId = workerId,
             map = map,
@@ -148,7 +149,7 @@ class MapDownloadRepositoryImpl(
                         sendNotification(
                             title = "Map Downloaded",
                             text = "",
-                            modelName = map.name,
+                            mapName = map.name,
                         )
 
                         downloadStartTimeSharedPreferences.edit { remove(map.name) }
@@ -166,7 +167,7 @@ class MapDownloadRepositoryImpl(
                             sendNotification(
                                 title = "Map Download Failed",
                                 text = "",
-                                modelName = "",
+                                mapName = "",
                             )
                         }
                         onStatusUpdated(
@@ -177,15 +178,24 @@ class MapDownloadRepositoryImpl(
                         downloadStartTimeSharedPreferences.edit { remove(map.name) }
                     }
 
-                    else -> {
-                        null
-                    }
+                    else -> {null}
                 }
             }
         }
     }
 
-    private fun sendNotification(title: String, text: String, modelName: String) {
+    //todo: hardcode, fixme
+    override fun getStyleJsonPath(map: MapModel): String? {
+        val file = File(externalFilesDir, "${map.normalizedName}/style_runtime.json")
+        return if (file.exists()) file.absolutePath else null
+    }
+
+    override fun getGraphPath(map: MapModel): String? {
+        val file = File(externalFilesDir, "${map.normalizedName}/graph-cache")
+        return if (file.exists()) file.absolutePath else null
+    }
+
+    private fun sendNotification(title: String, text: String, mapName: String) {
         if (lifecycleProvider.isAppInForeground) {
             return
         }
@@ -212,7 +222,7 @@ class MapDownloadRepositoryImpl(
 
         val builder =
             NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -227,7 +237,6 @@ class MapDownloadRepositoryImpl(
                 ) !=
                 PackageManager.PERMISSION_GRANTED
             ) {
-
                 return
             }
             notify(1, builder.build())

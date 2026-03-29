@@ -30,6 +30,7 @@ import com.kblack.offlinemap.domain.models.MapDownloadStatusType
 import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.presentation.ui.Constant.MAP_INFO_ICON_SIZE
 import com.kblack.offlinemap.presentation.ui.convertBytesToReadable
+import com.kblack.offlinemap.presentation.ui.theme.customColors
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -130,12 +131,12 @@ fun StatusIcon(
         horizontalArrangement = Arrangement.Center,
         modifier = modifier,
     ) {
-        val color = MaterialTheme.colorScheme.primary
+//        val color = MaterialTheme.colorScheme.primary
         when (downloadStatus?.status) {
             MapDownloadStatusType.NOT_DOWNLOADED -> {
                 Icon(
                     Icons.AutoMirrored.Outlined.HelpOutline,
-                    tint = Color(0xFFCCCCCC),
+                    tint = MaterialTheme.customColors.modelInfoIconColor,
                     contentDescription = stringResource(R.string.cd_not_downloaded_icon),
                     modifier = Modifier.size(MAP_INFO_ICON_SIZE),
                 )
@@ -144,7 +145,7 @@ fun StatusIcon(
             MapDownloadStatusType.SUCCEEDED -> {
                 Icon(
                     Icons.Filled.DownloadForOffline,
-                    tint = color,
+                    tint = Color(0xFF3174F1),
                     contentDescription = stringResource(R.string.cd_downloaded_icon),
                     modifier = Modifier.size(MAP_INFO_ICON_SIZE),
                 )

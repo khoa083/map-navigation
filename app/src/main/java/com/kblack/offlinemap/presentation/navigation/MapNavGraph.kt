@@ -36,7 +36,7 @@ fun MapNavGraph(
             val mapId = backStackEntry.arguments?.getString("mapId") ?: return@composable
             val uiState by homeViewModel.uiState.collectAsState()
             val map = uiState.maps.find { it.mapId == mapId } ?: return@composable
-            MapViewScreen(map,homeViewModel)
+            MapViewScreen(map)
         }
     }
 

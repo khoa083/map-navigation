@@ -83,6 +83,7 @@ dependencies {
     implementation(libs.bundles.dataStore)
     implementation(libs.work.runtime.ktx)
     implementation(libs.bundles.maplibre)
+//    implementation(libs.maplibre.plugin.annotation)
     ksp(libs.hilt.android.compiler)
     implementation(libs.bundles.hilt)
     implementation(libs.bundles.roomDb)

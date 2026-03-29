@@ -16,6 +16,7 @@ import com.halilibo.richtext.ui.CodeBlockStyle
 import com.halilibo.richtext.ui.RichTextStyle
 import com.halilibo.richtext.ui.material3.RichText
 import com.halilibo.richtext.ui.string.RichTextStringStyle
+import com.kblack.offlinemap.presentation.ui.theme.customColors
 
 @Composable
 fun MarkdownText(
@@ -23,7 +24,7 @@ fun MarkdownText(
     modifier: Modifier = Modifier,
     smallFontSize: Boolean = false,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
-    linkColor: Color = Color(0xFF32628D),
+    linkColor: Color = MaterialTheme.customColors.linkColor,
 ) {
     val fontSize =
         if (smallFontSize) MaterialTheme.typography.bodyMedium.fontSize

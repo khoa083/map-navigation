@@ -2,4 +2,8 @@
 <resources>
 
     <style name="Theme.Offlinemap" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="BugHunter" parent="Theme.Material3.DayNight.NoActionBar">
+
+    </style>
 </resources>

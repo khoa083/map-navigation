@@ -1,11 +1,15 @@
 package com.kblack.offlinemap.data.di
 
 import android.content.Context
+import androidx.work.WorkManager
 import com.kblack.offlinemap.data.remote.api.MapListRemoteDataSource
 import com.kblack.offlinemap.data.repository.AppLifecycleProviderImpl
+import com.kblack.offlinemap.data.repository.DirectFallbackRouteBuilder
 import com.kblack.offlinemap.data.repository.MapDownloadRepositoryImpl
+import com.kblack.offlinemap.data.repository.RoutingRepositoryImpl
 import com.kblack.offlinemap.domain.repository.AppLifecycleProvider
 import com.kblack.offlinemap.domain.repository.MapDownloadRepository
+import com.kblack.offlinemap.domain.repository.RoutingRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,11 +35,46 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideWorkManager(
+        @ApplicationContext context: Context
+    ): WorkManager {
+        return WorkManager.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideMapDownloadRepository(
         @ApplicationContext context: Context,
         lifecycleProvider: AppLifecycleProvider,
+        workManager : WorkManager
     ): MapDownloadRepository {
-        return MapDownloadRepositoryImpl(context, lifecycleProvider)
+        return MapDownloadRepositoryImpl(context, lifecycleProvider, workManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDirectFallbackRouteBuilder(): DirectFallbackRouteBuilder {
+        return DirectFallbackRouteBuilder()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRoutingRepository(
+        directFallbackRouteBuilder: DirectFallbackRouteBuilder
+    ): RoutingRepository {
+        return RoutingRepositoryImpl(
+            fallbackBuilder = directFallbackRouteBuilder
+        )
     }
 
 }
+
+//@Module
+//@InstallIn(SingletonComponent::class)
+//abstract class RepositoryBindModule {
+//    @Binds
+//    @Singleton
+//    abstract fun bindMapDownloadRepository(
+//        impl: MapDownloadRepositoryImpl
+//    ): MapDownloadRepository
+//}

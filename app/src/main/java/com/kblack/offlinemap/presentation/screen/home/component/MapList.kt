@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.kblack.offlinemap.domain.models.MapDownloadStatus
 import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.presentation.screen.home.HomeViewModel
+import com.kblack.offlinemap.presentation.ui.theme.customColors
 import timber.log.Timber
 
 @Composable
@@ -90,7 +91,7 @@ private fun MapItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(size = 12.dp))
-            .background(color = Color(0xFF282A2C))
+            .background(color = MaterialTheme.customColors.taskCardBgColor)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

@@ -161,8 +161,7 @@ fun DownloadMapButton(
                 colors = ButtonDefaults.buttonColors(
                     containerColor =
                         if (
-                            (!downloadSucceeded || !canShowTryIt) &&
-                            mapOff.localFileRelativeDirPathOverride.isEmpty()
+                            (!downloadSucceeded || !canShowTryIt)
                         ) {
                             MaterialTheme.colorScheme.surfaceContainer
                         } else {
