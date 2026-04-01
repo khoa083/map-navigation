@@ -25,4 +25,9 @@ object Constant {
     const val BASE_HUGGINGFACE_URL = "https://huggingface.co/datasets/kblack083/mapdata/resolve/main/"
 
     const val ALLOWLIST_URL = "https://raw.githubusercontent.com/khoa083/mapdata/refs/heads/main/map_lists.json"
+
+    // Zoom level at target. A value in the range of [0 ... 25.5]
+    const val MIN_ZOOM = 1.0
+    const val MAX_ZOOM = 20.0
+    const val INITIAL_ZOOM = 10.0
 }

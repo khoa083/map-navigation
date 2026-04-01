@@ -5,9 +5,11 @@ import androidx.work.WorkManager
 import com.kblack.offlinemap.data.remote.api.MapListRemoteDataSource
 import com.kblack.offlinemap.data.repository.AppLifecycleProviderImpl
 import com.kblack.offlinemap.data.repository.DirectFallbackRouteBuilder
+import com.kblack.offlinemap.data.repository.LocationRepositoryImpl
 import com.kblack.offlinemap.data.repository.MapDownloadRepositoryImpl
 import com.kblack.offlinemap.data.repository.RoutingRepositoryImpl
 import com.kblack.offlinemap.domain.repository.AppLifecycleProvider
+import com.kblack.offlinemap.domain.repository.LocationRepository
 import com.kblack.offlinemap.domain.repository.MapDownloadRepository
 import com.kblack.offlinemap.domain.repository.RoutingRepository
 import dagger.Module
@@ -49,6 +51,14 @@ object AppModule {
         workManager : WorkManager
     ): MapDownloadRepository {
         return MapDownloadRepositoryImpl(context, lifecycleProvider, workManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocationRepository(
+        @ApplicationContext context: Context
+    ): LocationRepository {
+        return LocationRepositoryImpl(context)
     }
 
     @Provides

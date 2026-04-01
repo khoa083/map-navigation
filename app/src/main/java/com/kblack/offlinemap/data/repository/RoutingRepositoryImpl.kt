@@ -6,8 +6,6 @@ import com.graphhopper.ResponsePath
 import com.graphhopper.config.CHProfile
 import com.graphhopper.config.Profile
 import com.graphhopper.routing.ev.MaxSpeed
-import com.graphhopper.routing.weighting.Weighting
-import com.graphhopper.storage.CHConfig
 import com.graphhopper.util.Instruction
 import com.graphhopper.util.Parameters
 import com.graphhopper.util.details.PathDetail
@@ -20,14 +18,13 @@ import com.kblack.offlinemap.domain.repository.RoutingRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
+import timber.log.Timber
 import java.io.File
-import javax.inject.Inject
 
-class RoutingRepositoryImpl (
+class RoutingRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = IO,
     private val fallbackBuilder: DirectFallbackRouteBuilder
-): RoutingRepository {
+) : RoutingRepository {
 
     @Volatile
     private var hopper: GraphHopper? = null
@@ -61,6 +58,8 @@ class RoutingRepositoryImpl (
                 //todo: show noti
             }
             hopper = localHopper
+
+            Timber.d("[CAPTURE] Initialize GraphHopper: $loaded")
         }
     }
 
@@ -74,13 +73,13 @@ class RoutingRepositoryImpl (
         val h = hopper ?: throw IllegalStateException("GraphHopper engine is not initialized")
         val request = GHRequest(
             from.latitude, from.longitude,
-            to.latitude,to.longitude
+            to.latitude, to.longitude
         )
             .setProfile(options.travelMode.vehicleKey)
             .setAlgorithm(Parameters.Algorithms.DIJKSTRA_BI)
         request.hints.putObject(Parameters.Routing.INSTRUCTIONS, true)
 
-        if(options.instructionsEnabled) {
+        if (options.instructionsEnabled) {
             request.pathDetails.add(MaxSpeed.KEY)
             request.pathDetails.add(Parameters.Details.AVERAGE_SPEED)
         }
@@ -97,6 +96,7 @@ class RoutingRepositoryImpl (
             }
             throw IllegalStateException(firstError)
         }
+        Timber.d("[CAPTURE] CalculateRoute GraphHopper: ${response.best}")
         mapPath(response.best)
 
     }
@@ -104,6 +104,7 @@ class RoutingRepositoryImpl (
     override fun close() {
         hopper?.close()
         hopper = null
+        Timber.d("[CAPTURE] Close GraphHopper")
     }
 
     //https://github.com/graphhopper/graphhopper/blob/b5ad8b3e120df2228c116938fe7de8f99f392014/android/app/src/main/java/com/graphhopper/android/MainActivity.java#L410
@@ -170,6 +171,25 @@ class RoutingRepositoryImpl (
         for ((key, value) in path.pathDetails) {
             speedMap[key] = mapPathDetails(value)
         }
+
+        Timber.d(
+            "[CAPTURE] instructions GraphHopper $instructions"
+        )
+
+        //LOG
+        Timber.d(
+            "[CAPTURE] Route GraphHopper ${
+                Route(
+                    distanceMeters = path.distance,
+                    durationMillis = path.time,
+                    points = points,
+                    instructions = instructions,
+                    speedDetails = speedMap,
+                    isDirectFallback = false,
+                    debugInfo = path.debugInfo ?: ""
+                )
+            }"
+        )
 
         return Route(
             distanceMeters = path.distance,

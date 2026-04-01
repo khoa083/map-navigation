@@ -35,7 +35,7 @@ data class MapManagerUiState(
     val loadingMapAllowlist: Boolean = true,
     val loadingMapAllowlistError: String = "",
 )
-
+// todo: FIXME
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val remoteDataSource: MapListRemoteDataSource,

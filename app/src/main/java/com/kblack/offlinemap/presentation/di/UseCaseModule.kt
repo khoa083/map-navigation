@@ -1,7 +1,10 @@
 package com.kblack.offlinemap.presentation.di
 
+import com.kblack.offlinemap.domain.repository.LocationRepository
 import com.kblack.offlinemap.domain.repository.MapDownloadRepository
 import com.kblack.offlinemap.domain.repository.RoutingRepository
+import com.kblack.offlinemap.domain.usecase.location.GetCurrentLocationUseCase
+import com.kblack.offlinemap.domain.usecase.location.ObserveCurrentLocationUseCase
 import com.kblack.offlinemap.domain.usecase.routing.CalculateRouteUseCase
 import com.kblack.offlinemap.domain.usecase.routing.CloseRoutingEngineUseCase
 import com.kblack.offlinemap.domain.usecase.routing.InitializeRoutingEngineUseCase
@@ -11,6 +14,7 @@ import com.kblack.offlinemap.domain.usecase.mapdownload.DownloadMapUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetGraphPathUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetStyleJsonPathUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.ObserverWorkerProgressUseCase
+import com.kblack.offlinemap.domain.usecase.routing.BuildNavigationSnapshotUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -93,5 +97,26 @@ object UseCaseModule {
         return GetGraphPathUseCase(downloadMapRepository)
     }
 
+    @Provides
+    @ViewModelScoped
+    fun provideGetCurrentLocation(
+        locationRepository: LocationRepository
+    ): GetCurrentLocationUseCase {
+        return GetCurrentLocationUseCase(locationRepository)
+    }
+
+    @Provides
+    @ViewModelScoped
+    fun provideObserveCurrentLocation(
+        locationRepository: LocationRepository
+    ): ObserveCurrentLocationUseCase {
+        return ObserveCurrentLocationUseCase(locationRepository)
+    }
+
+    @Provides
+    @ViewModelScoped
+    fun provideBuildNavigationSnapshotUseCase(): BuildNavigationSnapshotUseCase {
+        return BuildNavigationSnapshotUseCase()
+    }
 
 }

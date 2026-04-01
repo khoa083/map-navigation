@@ -184,7 +184,7 @@ class MapDownloadRepositoryImpl (
         }
     }
 
-    //todo: hardcode, fixme
+    //todo: FIXME - hardcode
     override fun getStyleJsonPath(map: MapModel): String? {
         val file = File(externalFilesDir, "${map.normalizedName}/style_runtime.json")
         return if (file.exists()) file.absolutePath else null
