@@ -1,11 +1,14 @@
 package com.kblack.offlinemap.presentation.screen.home.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -14,9 +17,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -27,7 +34,6 @@ import com.kblack.offlinemap.domain.models.MapDownloadStatus
 import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.presentation.screen.home.HomeViewModel
 import com.kblack.offlinemap.presentation.ui.theme.customColors
-import timber.log.Timber
 
 @Composable
 fun MapList(
@@ -87,6 +93,8 @@ private fun MapItem(
     showDeleteButton: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    val isAllowed = mapOff.allow
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -94,7 +102,10 @@ private fun MapItem(
             .background(color = MaterialTheme.customColors.taskCardBgColor)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .blur(if (isAllowed) 0.dp else 3.dp)
+                .alpha(if (isAllowed) 1f else 0.6f)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
@@ -114,7 +125,7 @@ private fun MapItem(
                             mapOff = mapOff,
                             homeViewModel = homeViewModel,
                             downloadStatus = downloadStatus,
-                            showDeleteBtn = showDeleteButton,
+                            showDeleteBtn = showDeleteButton && isAllowed,
                             modifier = Modifier.offset(y = (-12).dp, x = 0.dp)
                         )
                     }
@@ -131,8 +142,37 @@ private fun MapItem(
                 mapOff = mapOff,
                 downloadStatus = downloadStatus,
                 homeViewModel = homeViewModel,
-                onClicked = { onModelClicked(mapOff) },
+                enabled = isAllowed,
+                onClicked = {
+                    if (isAllowed) {
+                        onModelClicked(mapOff)
+                    }
+                },
             )
+        }
+
+        if (!isAllowed) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {}
+                    )
+            ) {
+                Text(
+                    text = "Coming soon",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                )
+            }
         }
 
     }

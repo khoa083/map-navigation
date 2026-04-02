@@ -37,6 +37,7 @@ data class MapUiState(
 
     val startPoint: GeoCoordinate? = null,
     val endPoint: GeoCoordinate? = null,
+    //todo: FIXME 'currentLocation' migrate to LocationPunkData
     val currentLocation: GeoCoordinate? = null,
     val route: Route? = null,
     val routingOptions: RoutingOptions = RoutingOptions(),
@@ -45,8 +46,23 @@ data class MapUiState(
     val searchResults: List<PlaceCandidate> = emptyList(),
     val searchQuery: String = "",
 
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+
+    val isTracking: Boolean = false,
+    val bearingMode: BearingMode = BearingMode.IGNORE,
 )
+
+enum class BearingMode {
+    IGNORE,
+    ALWAYS_NORTH,
+    TRACK_LOCATION;
+
+    fun next(): BearingMode = when (this) {
+        IGNORE -> ALWAYS_NORTH
+        ALWAYS_NORTH -> TRACK_LOCATION
+        TRACK_LOCATION -> IGNORE
+    }
+}
 
 @HiltViewModel
 class MapViewModel @Inject constructor(

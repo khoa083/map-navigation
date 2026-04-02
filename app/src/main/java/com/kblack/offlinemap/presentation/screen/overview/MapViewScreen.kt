@@ -5,15 +5,22 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,9 +28,13 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
@@ -35,13 +46,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kblack.offlinemap.domain.models.GeoCoordinate
 import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.presentation.base.BaseContainer
+import com.kblack.offlinemap.presentation.model.LocationPunkData
 import com.kblack.offlinemap.presentation.screen.overview.component.MapControls
+import com.kblack.offlinemap.presentation.screen.overview.component.RouteInstructionsSheetContent
 import com.kblack.offlinemap.presentation.screen.overview.component.SelectPointBottomSheet
 import com.kblack.offlinemap.presentation.screen.overview.component.UpdateRoutingVehicle
+import com.kblack.offlinemap.presentation.screen.overview.component.normalizeDegree
+import com.kblack.offlinemap.presentation.screen.overview.component.rememberCompassHeading
+import com.kblack.offlinemap.presentation.screen.overview.component.shortestAngleDelta
 import com.kblack.offlinemap.presentation.ui.Constant.INITIAL_ZOOM
 import com.kblack.offlinemap.presentation.ui.Constant.MAX_ZOOM
 import com.kblack.offlinemap.presentation.ui.Constant.MIN_ZOOM
 import com.kblack.offlinemap.presentation.ui.theme.customColors
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
@@ -51,6 +69,10 @@ import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.location.BearingUpdate
+import org.maplibre.compose.location.LocationTrackingEffect
+import org.maplibre.compose.location.rememberDefaultLocationProvider
+import org.maplibre.compose.location.rememberUserLocationState
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.OrnamentOptions
@@ -63,8 +85,9 @@ import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import timber.log.Timber
+import kotlin.math.abs
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +110,15 @@ fun MapViewScreen(
     val showEndFlagAndTopBar = uiState.startPoint != null && uiState.endPoint != null
     val selectedTravelMode = uiState.routingOptions.travelMode
 
+    //fix show picker point
+    LaunchedEffect(showEndFlagAndTopBar) {
+        if (showEndFlagAndTopBar) {
+            showSelectPointSheet = false
+        }
+    }
+
+    val targetHeading = remember { mutableStateOf<Float?>(null) }
+
     fun hasLocationPermission(ctx: Context): Boolean {
         val fine = ActivityCompat.checkSelfPermission(
             ctx, Manifest.permission.ACCESS_FINE_LOCATION
@@ -106,7 +138,8 @@ fun MapViewScreen(
         hasPermission = hasLocationPermission(context)
     }
 
-    // Call useCurrentLocationAsStart() when permission is granted
+    val sheetState = rememberBottomSheetScaffoldState()
+
     LaunchedEffect(hasPermission) {
         if (hasPermission) {
             mapViewModel.useCurrentLocation()
@@ -141,15 +174,64 @@ fun MapViewScreen(
                 )
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
         mapViewModel.centerOnCurrentLocation.collect { p ->
             camera.animateTo(
                 CameraPosition(
                     target = Position(latitude = p.latitude, longitude = p.longitude),
-                    zoom = 18.0,
+                    zoom = 15.0,
                 ),
                 duration = 3.seconds
             )
+        }
+    }
 
+    if (hasPermission && uiState.isNavigating) {
+        val locationProvider = rememberDefaultLocationProvider()
+        val locationState = rememberUserLocationState(locationProvider)
+
+        LocationTrackingEffect(
+            trackBearing = true,
+            locationState = locationState,
+            enabled = true,
+        ) {
+            val speed = currentLocation.speed?.toFloat() ?: 0f
+            val speedThreshold = 2f  // m/s (~7.2 km/h)
+
+            val updateMode = if (speed >= speedThreshold) {
+                BearingUpdate.TRACK_LOCATION
+            } else {
+                BearingUpdate.ALWAYS_NORTH
+            }
+            
+            camera.updateFromLocation(updateBearing = updateMode)
+        }
+    }
+
+
+    if(false) {
+        val heading by rememberCompassHeading()
+
+        LaunchedEffect(Unit) {
+            snapshotFlow { heading }.collect { h ->
+                targetHeading.value = h
+            }
+        }
+
+        LaunchedEffect(camera) {
+            var current = camera.position.bearing.toFloat()
+            while (true) {
+                withFrameMillis {
+                    val target = targetHeading.value ?: return@withFrameMillis
+                    val delta = shortestAngleDelta(current, target)
+                    if (abs(delta) > 0.05f) {
+                        current = normalizeDegree(current + delta * 0.2f)
+                        camera.position = camera.position.copy(bearing = current.toDouble())
+                    }
+                }
+            }
         }
     }
 
@@ -177,6 +259,8 @@ fun MapViewScreen(
                     //todo test: if both points are already selected, clicking on the map should clear them and start new selection
                     if (!showEndFlagAndTopBar) {
                         showSelectPointSheet = true
+                    } else {
+                        showSelectPointSheet = false
                     }
 
                     ClickResult.Pass
@@ -207,9 +291,9 @@ fun MapViewScreen(
                         source = routeSource,
                         minZoom = 0.0f,
                         maxZoom = 24.0f,
-                        color = const(Color.Blue),
-                        width = const(4.dp),
-                        opacity = const(0.5f),
+                        color = const(Color(0xFF0B57D0)),
+                        width = const(8.dp),
+                        opacity = const(0.6f),
                         cap = const(LineCap.Round),
                         join = const(LineJoin.Round),
 //                        dasharray = const(listOf(3f, 2f)) //todo: foot
@@ -263,7 +347,11 @@ fun MapViewScreen(
             if (showEndFlagAndTopBar) {
                 UpdateRoutingVehicle(
                     selectedTravelMode = selectedTravelMode,
-                    onBackClick = { mapViewModel.clearPoints() },
+                    onBackClick = {
+                        showSelectPointSheet = false
+                        point = null
+                        mapViewModel.clearPoints()
+                    },
                     onTravelModeChange = { mode ->
                         mapViewModel.updateRoutingOptions(
                             uiState.routingOptions.copy(travelMode = mode)
@@ -298,26 +386,67 @@ fun MapViewScreen(
                     onDismissRequest = { showSelectPointSheet = false },
                     onSelectStart = { startP ->
                         mapViewModel.selectStartPoint(startP)
+                        showSelectPointSheet = false
                     },
                     onSelectEnd = { endP ->
                         mapViewModel.selectEndPoint(endP)
+                        showSelectPointSheet = false
                     }
                 )
             }
+
+            if (showEndFlagAndTopBar) {
+                BottomSheetScaffold(
+                    sheetPeekHeight = 128.dp,
+                    scaffoldState = sheetState,
+                    sheetSwipeEnabled = sheetState.bottomSheetState.currentValue != SheetValue.Expanded,
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.customColors.taskCardBgColor,
+                    sheetContainerColor = MaterialTheme.customColors.taskCardBgColor,
+                    sheetDragHandle = {
+                        ExpandCollapseButton(
+                            sheetState.bottomSheetState.targetValue == SheetValue.Expanded,
+                            onExpand = { sheetState.bottomSheetState.expand() },
+                            onCollapse = { sheetState.bottomSheetState.partialExpand() },
+                        )
+                    },
+                        sheetContent = {
+                            RouteInstructionsSheetContent(
+                                route = uiState.route,
+                                isRouting = uiState.isRouting,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        },
+                    ) { _ -> }
+            }
         }
+    }
+}
+
+@Composable
+private fun ExpandCollapseButton(
+    expanded: Boolean,
+    onExpand: suspend () -> Unit,
+    onCollapse: suspend () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val degrees by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
+    val coroutineScope = rememberCoroutineScope()
+    IconButton(
+        modifier = modifier,
+        onClick = { coroutineScope.launch { if (expanded) onCollapse() else onExpand() } },
+    ) {
+        Icon(
+            imageVector = Icons.Default.KeyboardArrowUp,
+            contentDescription = "Expand/Collapse",
+            modifier = Modifier.rotate(degrees)
+        )
     }
 }
 
 //todo FIXME : migrate to LocationPuck
 // https://maplibre.org/maplibre-compose/api/lib/maplibre-compose/org.maplibre.compose.location/-location-puck.html
 // Like google maps
-//┌─────────────────────────────────────────┐
-//│ 1. Accuracy Circle (CircleLayer)        │
-//│ 2. Shadow (CircleLayer)                 │
-//│ 3. Main Dot (CircleLayer)               │
-//│ 4. Bearing Indicator (SymbolLayer)      │
-//│ 5. Bearing Accuracy (SymbolLayer)       │
-//└─────────────────────────────────────────┘
 @Composable
 private fun CirclePointLayer(
     id: String,

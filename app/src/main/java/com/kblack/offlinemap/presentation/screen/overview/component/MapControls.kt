@@ -108,6 +108,6 @@ fun BoxScope.MapControls(
             }
         }
 
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(120.dp))
     }
 }
