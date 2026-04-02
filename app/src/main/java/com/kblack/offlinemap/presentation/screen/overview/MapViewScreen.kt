@@ -46,7 +46,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kblack.offlinemap.domain.models.GeoCoordinate
 import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.presentation.base.BaseContainer
-import com.kblack.offlinemap.presentation.model.LocationPunkData
 import com.kblack.offlinemap.presentation.screen.overview.component.MapControls
 import com.kblack.offlinemap.presentation.screen.overview.component.RouteInstructionsSheetContent
 import com.kblack.offlinemap.presentation.screen.overview.component.SelectPointBottomSheet

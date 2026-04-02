@@ -37,7 +37,6 @@ data class MapUiState(
 
     val startPoint: GeoCoordinate? = null,
     val endPoint: GeoCoordinate? = null,
-    //todo: FIXME 'currentLocation' migrate to LocationPunkData
     val currentLocation: GeoCoordinate? = null,
     val route: Route? = null,
     val routingOptions: RoutingOptions = RoutingOptions(),
