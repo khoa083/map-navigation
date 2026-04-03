@@ -26,14 +26,15 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -92,6 +93,7 @@ import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+//todo: FIXME: this file is getting too long, consider split into multiple files if possible
 @SuppressLint("SourceLockedOrientationActivity")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,6 +136,7 @@ fun MapViewScreen(
 
     var compassMode by remember { mutableStateOf(false) }
     var mapMode3d by remember { mutableStateOf(false) }
+    val currentTilt by rememberUpdatedState(if (mapMode3d) 55.0 else 0.0)
 
     val routeCoords = remember(routePoints) {
         routePoints.map { Point.fromLngLat(it.longitude, it.latitude) }
@@ -147,15 +150,13 @@ fun MapViewScreen(
             progress.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(
-                    durationMillis = 1000, // chỉnh tốc độ ở đây
+                    durationMillis = 1000,
                     easing = LinearEasing
                 )
             )
         }
     }
 
-
-    val targetHeading = remember { mutableStateOf<Float?>(null) }
 
     fun hasLocationPermission(ctx: Context): Boolean {
         val fine = ActivityCompat.checkSelfPermission(
@@ -194,9 +195,10 @@ fun MapViewScreen(
         )
 
     LaunchedEffect(zoom) {
-        camera.animateTo(
-            finalPosition =
-                camera.position.copy(
+        if (abs(camera.position.zoom - zoom) < 0.01) return@LaunchedEffect
+         camera.animateTo(
+             finalPosition =
+                 camera.position.copy(
                     zoom = zoom
                 ),
         )
@@ -221,20 +223,20 @@ fun MapViewScreen(
                 )
             )
         }
-    }
-
-    //todo: FIXME: hard code tilt, zoom
-    LaunchedEffect(Unit) {
         mapViewModel.centerOnCurrentLocation.collect { p ->
             camera.animateTo(
                 CameraPosition(
                     target = Position(latitude = p.latitude, longitude = p.longitude),
                     zoom = 16.5,
-                    tilt = if (mapMode3d) 55.0 else 0.0
+                    tilt = currentTilt
                 ),
                 duration = 3.seconds
             )
         }
+    }
+
+    LaunchedEffect(uiState.isNavigating) {
+        if (uiState.isNavigating && !mapMode3d) mapMode3d = true
     }
 
     if (hasPermission && uiState.isNavigating) {
@@ -262,24 +264,49 @@ fun MapViewScreen(
     if(compassMode) {
         val heading by rememberCompassHeading()
 
-        LaunchedEffect(Unit) {
-            snapshotFlow { heading }.collect { h ->
-                targetHeading.value = h
-            }
-        }
-
-        LaunchedEffect(camera) {
-            var current = camera.position.bearing.toFloat()
-            while (true) {
-                withFrameMillis {
-                    val target = targetHeading.value ?: return@withFrameMillis
-                    val delta = shortestAngleDelta(current, target)
-                    if (abs(delta) > 0.05f) {
-                        current = normalizeDegree(current + delta * 0.2f)
-                        camera.position = camera.position.copy(bearing = current.toDouble())
-                    }
+        LaunchedEffect(uiState.isNavigating) {
+            if (!compassMode || uiState.isNavigating) return@LaunchedEffect
+            snapshotFlow { heading }.collect { target ->
+                val targetBearing = target ?: return@collect
+                val current = camera.position.bearing.toFloat()
+                val delta = shortestAngleDelta(current, targetBearing)
+                if (abs(delta) > 1f) {
+                    val next = normalizeDegree(current + delta * 0.2f)
+                    camera.position = camera.position.copy(bearing = next.toDouble())
                 }
             }
+        }
+    }
+//    val targetHeading = remember { mutableStateOf<Float?>(null) }
+//    if(compassMode) {
+//        val heading by rememberCompassHeading()
+//
+//        LaunchedEffect(Unit) {
+//            snapshotFlow { heading }.collect { h ->
+//                targetHeading.value = h
+//            }
+//        }
+//
+//        LaunchedEffect(camera) {
+//            var current = camera.position.bearing.toFloat()
+//            while (true) {
+//                withFrameMillis {
+//                    val target = targetHeading.value ?: return@withFrameMillis
+//                    val delta = shortestAngleDelta(current, target)
+//                    if (abs(delta) > 0.05f) {
+//                        current = normalizeDegree(current + delta * 0.2f)
+//                        camera.position = camera.position.copy(bearing = current.toDouble())
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    val routeGeoJson by remember(routeCoords) {
+        derivedStateOf {
+            if (routeCoords.size < 2) return@derivedStateOf null
+            val count = ((routeCoords.size - 1) * progress.value).toInt().coerceAtLeast(1) + 1
+            Feature.fromGeometry(LineString.fromLngLats(routeCoords.take(count))).toJson()
         }
     }
 
@@ -322,28 +349,24 @@ fun MapViewScreen(
             ) {
 
                 if (routeCoords.size >= 2) {
-                    val revealCount = ((routeCoords.size - 1) * progress.value).toInt().coerceAtLeast(1) + 1
-                    val revealed = routeCoords.take(revealCount)
+                    val json = routeGeoJson
+                    if (json != null) {
+                        val routeSource = rememberGeoJsonSource(
+                            data = GeoJsonData.JsonString(json)
+                        )
 
-                    val routeGeoJson = remember(revealed) {
-                        Feature.fromGeometry(LineString.fromLngLats(revealed)).toJson()
+                        LineLayer(
+                            id = "route-layer",
+                            source = routeSource,
+                            minZoom = 0.0f,
+                            maxZoom = 24.0f,
+                            color = const(Color(0xFF0B57D0)),
+                            width = const(8.dp),
+                            opacity = const(0.6f),
+                            cap = const(LineCap.Round),
+                            join = const(LineJoin.Round),
+                        )
                     }
-
-                    val routeSource = rememberGeoJsonSource(
-                        data = GeoJsonData.JsonString(routeGeoJson)
-                    )
-
-                    LineLayer(
-                        id = "route-layer",
-                        source = routeSource,
-                        minZoom = 0.0f,
-                        maxZoom = 24.0f,
-                        color = const(Color(0xFF0B57D0)),
-                        width = const(8.dp),
-                        opacity = const(0.6f),
-                        cap = const(LineCap.Round),
-                        join = const(LineJoin.Round),
-                    )
                 }
 
                 if (showEndFlagAndTopBar) {
@@ -353,22 +376,24 @@ fun MapViewScreen(
                         point = uiState.endPoint!!
                     )
                 } else if (uiState.endPoint != null) {
+                    val endPointSource = rememberGeoJsonSource(
+                        data = GeoJsonData.JsonString(singlePointFeatureJson(uiState.endPoint!!))
+                    )
                     CircleLayer(
                         id = "end-point-layer",
-                        source = rememberGeoJsonSource(
-                            data = GeoJsonData.JsonString(singlePointFeatureJson(uiState.endPoint!!))
-                        ),
+                        source = endPointSource,
                         color = const(Color(0xFF0B57D0)),
                         radius = const(8.dp)
 
                     )
                 }
                 if (uiState.startPoint != null && uiState.startPoint != uiState.currentLocation) {
+                    val startPointSource = rememberGeoJsonSource(
+                        data = GeoJsonData.JsonString(singlePointFeatureJson(uiState.startPoint!!))
+                    )
                     CircleLayer(
                         id = "start-point-layer",
-                        source = rememberGeoJsonSource(
-                            data = GeoJsonData.JsonString(singlePointFeatureJson(uiState.startPoint!!))
-                        ),
+                        source = startPointSource,
                         color = const(Color(0xFF0B57D0)),
                         radius = const(8.dp)
 
@@ -473,7 +498,6 @@ fun MapViewScreen(
             }
 
             if (uiState.isNavigating) {
-                mapMode3d = true
                 NavigationTopInstructionCard(
                     snapshot = uiState.navigationSnapshot,
                     modifier = Modifier.align(Alignment.TopCenter)
