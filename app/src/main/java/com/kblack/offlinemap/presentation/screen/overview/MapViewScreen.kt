@@ -70,6 +70,9 @@ import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.location.BearingUpdate
+import org.maplibre.compose.location.LocationPuck
+import org.maplibre.compose.location.LocationPuckColors
+import org.maplibre.compose.location.LocationPuckSizes
 import org.maplibre.compose.location.LocationTrackingEffect
 import org.maplibre.compose.location.rememberDefaultLocationProvider
 import org.maplibre.compose.location.rememberUserLocationState
@@ -125,6 +128,9 @@ fun MapViewScreen(
         }
     }
 
+    val locationProvider = rememberDefaultLocationProvider()
+    val locationState = rememberUserLocationState(locationProvider)
+
     var compassMode by remember { mutableStateOf(false) }
 
     val routeCoords = remember(routePoints) {
@@ -145,6 +151,7 @@ fun MapViewScreen(
             )
         }
     }
+
 
     val targetHeading = remember { mutableStateOf<Float?>(null) }
 
@@ -218,14 +225,13 @@ fun MapViewScreen(
     }
 
     if (hasPermission && uiState.isNavigating) {
-        val locationProvider = rememberDefaultLocationProvider()
-        val locationState = rememberUserLocationState(locationProvider)
 
         LocationTrackingEffect(
             trackBearing = true,
             locationState = locationState,
             enabled = true,
         ) {
+            Timber.d("Location update: $currentLocation")
             val speed = currentLocation.speed?.toFloat() ?: 0f
             val speedThreshold = 2f  // m/s (~7.2 km/h)
 
@@ -355,13 +361,20 @@ fun MapViewScreen(
 
                     )
                 }
-                uiState.currentLocation?.let { p ->
-                    CirclePointLayer(
-                        id = "current-location-layer",
-                        point = p,
-                        color = Color(0xFF0B57D0)
-                    )
-                }
+                // https://maplibre.org/maplibre-compose/api/lib/maplibre-compose/org.maplibre.compose.location/-location-puck.html
+                LocationPuck(
+                    idPrefix = "location-accuracy",
+                    locationState = locationState,
+                    cameraState = camera,
+                    oldLocationThreshold = 3.seconds,
+                    accuracyThreshold = 0f,
+                    colors = LocationPuckColors(
+                        bearingColor = Color(0xFF0B57D0),
+                    ),
+                    sizes = LocationPuckSizes(
+
+                    ),
+                )
             }
             if (uiState.isLoading) {
                 CircularProgressIndicator(
@@ -407,7 +420,7 @@ fun MapViewScreen(
                     }
                 },
                 compassMode = compassMode,
-                onClickCompass = {compassMode =! compassMode}
+                onClickCompass = {compassMode = !compassMode}
             )
 
             if (showSelectPointSheet && !showEndFlagAndTopBar) {
@@ -458,38 +471,6 @@ fun MapViewScreen(
         }
     }
 }
-
-//todo FIXME : migrate to LocationPuck
-// https://maplibre.org/maplibre-compose/api/lib/maplibre-compose/org.maplibre.compose.location/-location-puck.html
-// Like google maps
-@Composable
-private fun CirclePointLayer(
-    id: String,
-    point: GeoCoordinate,
-    color: Color,
-) {
-    val source = rememberGeoJsonSource(
-        data = GeoJsonData.JsonString(singlePointFeatureJson(point))
-    )
-
-    CircleLayer(
-        id = "$id-accuracy",
-        source = source,
-        color = const(color),
-        opacity = const(0.3f),
-        radius = const(14.dp)
-
-    )
-
-    CircleLayer(
-        id = id,
-        source = source,
-        color = const(color),
-        radius = const(8.dp)
-
-    )
-}
-
 @Composable
 private fun FlagPointLayer(
     id: String,
