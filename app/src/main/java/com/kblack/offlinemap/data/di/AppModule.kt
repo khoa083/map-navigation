@@ -78,13 +78,3 @@ object AppModule {
     }
 
 }
-
-//@Module
-//@InstallIn(SingletonComponent::class)
-//abstract class RepositoryBindModule {
-//    @Binds
-//    @Singleton
-//    abstract fun bindMapDownloadRepository(
-//        impl: MapDownloadRepositoryImpl
-//    ): MapDownloadRepository
-//}

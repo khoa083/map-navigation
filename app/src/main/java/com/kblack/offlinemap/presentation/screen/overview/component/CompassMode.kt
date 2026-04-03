@@ -40,7 +40,7 @@ import kotlin.math.abs
  */
 //https://proandroiddev.com/update-for-your-compass-new-android-orientation-api-dc4e5c25ca35
 @Composable
-fun rememberCompassHeading(
+fun rememberCompassMode(
     updateThresholdDeg: Float = 1f,
     smoothingAlpha: Float = 0.3f,
     sensorDelay: Int = SensorManager.SENSOR_DELAY_GAME,

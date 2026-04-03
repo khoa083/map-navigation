@@ -12,10 +12,10 @@ import com.kblack.offlinemap.domain.usecase.location.GetCurrentLocationUseCase
 import com.kblack.offlinemap.domain.usecase.location.ObserveCurrentLocationUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetGraphPathUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetStyleJsonPathUseCase
-import com.kblack.offlinemap.domain.usecase.routing.BuildNavigationSnapshotUseCase
+import com.kblack.offlinemap.domain.usecase.routing.BuildNavigationUseCase
 import com.kblack.offlinemap.domain.usecase.routing.CalculateRouteUseCase
-import com.kblack.offlinemap.domain.usecase.routing.CloseRoutingEngineUseCase
-import com.kblack.offlinemap.domain.usecase.routing.InitializeRoutingEngineUseCase
+import com.kblack.offlinemap.domain.usecase.routing.CloseRouterUseCase
+import com.kblack.offlinemap.domain.usecase.routing.InitializeRouterUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -68,11 +68,11 @@ class MapViewModel @Inject constructor(
     private val getStyleJsonPathUseCase: GetStyleJsonPathUseCase,
     private val getGraphPathUseCase: GetGraphPathUseCase,
     private val calculateRouteUseCase: CalculateRouteUseCase,
-    private val closeRoutingEngineUseCase: CloseRoutingEngineUseCase,
-    private val initializeRoutingEngineUseCase: InitializeRoutingEngineUseCase,
+    private val initializeRouterUseCase: InitializeRouterUseCase,
+    private val closeRouterUseCase: CloseRouterUseCase,
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
     private val observeCurrentLocationUseCase: ObserveCurrentLocationUseCase,
-    private val buildNavigationSnapshotUseCase: BuildNavigationSnapshotUseCase,
+    private val buildNavigationUseCase: BuildNavigationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MapUiState())
@@ -99,7 +99,7 @@ class MapViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             runCatching {
-                initializeRoutingEngineUseCase(graphPath)
+                initializeRouterUseCase(graphPath)
             }.onSuccess {
                 initializedGraphPath = graphPath
                 _uiState.update {
@@ -214,7 +214,7 @@ class MapViewModel @Inject constructor(
         val route = _uiState.value.route ?: return
         val current = currentLocation ?: return
         if (!_uiState.value.isNavigating) return
-        _uiState.update { it.copy(navigationSnapshot = buildNavigationSnapshotUseCase(route, current)) }
+        _uiState.update { it.copy(navigationSnapshot = buildNavigationUseCase(route, current)) }
     }
 
     override fun onCleared() {
@@ -222,7 +222,7 @@ class MapViewModel @Inject constructor(
         locationJob?.cancel()
         searchJob?.cancel()
         routeJob?.cancel()
-        closeRoutingEngineUseCase()
+        closeRouterUseCase()
     }
 
 }

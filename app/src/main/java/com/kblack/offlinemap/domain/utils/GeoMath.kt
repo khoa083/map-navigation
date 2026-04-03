@@ -6,11 +6,10 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
-
+// https://github.com/junjunguo/PocketMaps/blob/master/PocketMaps/app/src/main/java/com/junjunguo/pocketmaps/util/GeoMath.java
 object GeoMath {
     private const val EARTH_RADIUS_METERS = 6371000.0
 
-    /** Great-circle distance using Haversine approximation, output in meters. */
     fun distanceMeters(a: GeoCoordinate, b: GeoCoordinate): Double {
         val dLat = Math.toRadians(b.latitude - a.latitude)
         val dLon = Math.toRadians(b.longitude - a.longitude)
@@ -22,7 +21,6 @@ object GeoMath {
         return 2 * EARTH_RADIUS_METERS * asin(sqrt(h))
     }
 
-    /** Returns index of the nearest polyline point to target coordinate. */
     fun nearestPointIndex(path: List<GeoCoordinate>, target: GeoCoordinate): Int {
         if (path.isEmpty()) return -1
         var bestIndex = 0
@@ -39,7 +37,6 @@ object GeoMath {
         return bestIndex
     }
 
-    /** Returns shortest distance (meters) from point p to segment a-b. */
     fun distancePointToSegmentMeters(p: GeoCoordinate, a: GeoCoordinate, b: GeoCoordinate): Double {
         val ax = a.longitude
         val ay = a.latitude
@@ -67,7 +64,6 @@ object GeoMath {
         return distanceMeters(p, proj)
     }
 
-    /** Returns forward azimuth from one coordinate to another in [0, 360) degrees. */
     fun bearingDegrees(from: GeoCoordinate, to: GeoCoordinate): Double {
         val lat1 = Math.toRadians(from.latitude)
         val lat2 = Math.toRadians(to.latitude)

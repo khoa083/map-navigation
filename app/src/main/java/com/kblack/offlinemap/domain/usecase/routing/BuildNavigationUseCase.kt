@@ -6,12 +6,16 @@ import com.kblack.offlinemap.domain.models.Route
 import com.kblack.offlinemap.domain.models.RouteInstruction
 import com.kblack.offlinemap.domain.utils.GeoMath
 
-class BuildNavigationSnapshotUseCase {
+// https://github.com/junjunguo/PocketMaps/blob/master/PocketMaps/app/src/main/java/com/junjunguo/pocketmaps/navigator/NaviEngine.java
+// nearest-point + off-track detection
+// https://stackoverflow.com/questions/47109609/algorithm-to-find-the-nearest-point-to-a-path-using-latitude-and-longitude
+// todo: FIXME off-track detection current not working
+class BuildNavigationUseCase {
 
     operator fun invoke(
         route: Route,
         currentLocation: GeoCoordinate,
-        offTrackToleranceMeters: Double = 30.0
+        offTrack: Double = 30.0
     ): NavigationSnapshot {
         val points = route.points
         if (points.isEmpty()) {
@@ -26,7 +30,7 @@ class BuildNavigationSnapshotUseCase {
 
         val nearestIndex = GeoMath.nearestPointIndex(points, currentLocation)
         val offTrackDistance = minDistanceToRoute(points, currentLocation)
-        val isOffTrack = offTrackDistance > offTrackToleranceMeters
+        val isOffTrack = offTrackDistance > offTrack
 
         var remainingDistance = 0.0
         var i = nearestIndex

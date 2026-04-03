@@ -50,12 +50,12 @@ import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.presentation.base.BaseContainer
 import com.kblack.offlinemap.presentation.screen.overview.component.MapControls
 import com.kblack.offlinemap.presentation.screen.overview.component.NavigationBottomPanel
-import com.kblack.offlinemap.presentation.screen.overview.component.NavigationTopInstructionCard
-import com.kblack.offlinemap.presentation.screen.overview.component.RouteInstructionsSheetContent
+import com.kblack.offlinemap.presentation.screen.overview.component.NavigationMode
+import com.kblack.offlinemap.presentation.screen.overview.component.RouteInstructionsBottomSheet
 import com.kblack.offlinemap.presentation.screen.overview.component.SelectPointBottomSheet
 import com.kblack.offlinemap.presentation.screen.overview.component.UpdateRoutingVehicle
 import com.kblack.offlinemap.presentation.screen.overview.component.normalizeDegree
-import com.kblack.offlinemap.presentation.screen.overview.component.rememberCompassHeading
+import com.kblack.offlinemap.presentation.screen.overview.component.rememberCompassMode
 import com.kblack.offlinemap.presentation.screen.overview.component.shortestAngleDelta
 import com.kblack.offlinemap.presentation.ui.Constant.INITIAL_ZOOM
 import com.kblack.offlinemap.presentation.ui.Constant.MAX_ZOOM
@@ -93,7 +93,7 @@ import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-//todo: FIXME: this file is getting too long, consider split into multiple files if possible
+//todo: FIXME
 @SuppressLint("SourceLockedOrientationActivity")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -262,7 +262,7 @@ fun MapViewScreen(
 
 
     if(compassMode) {
-        val heading by rememberCompassHeading()
+        val heading by rememberCompassMode()
 
         LaunchedEffect(uiState.isNavigating) {
             if (!compassMode || uiState.isNavigating) return@LaunchedEffect
@@ -488,7 +488,7 @@ fun MapViewScreen(
                     contentColor = MaterialTheme.customColors.taskCardBgColor,
                     sheetContainerColor = MaterialTheme.customColors.taskCardBgColor,
                         sheetContent = {
-                            RouteInstructionsSheetContent(
+                            RouteInstructionsBottomSheet(
                                 route = uiState.route,
                                 isRouting = uiState.isRouting,
                                 modifier = Modifier.fillMaxSize()
@@ -498,7 +498,7 @@ fun MapViewScreen(
             }
 
             if (uiState.isNavigating) {
-                NavigationTopInstructionCard(
+                NavigationMode(
                     snapshot = uiState.navigationSnapshot,
                     modifier = Modifier.align(Alignment.TopCenter)
                 )

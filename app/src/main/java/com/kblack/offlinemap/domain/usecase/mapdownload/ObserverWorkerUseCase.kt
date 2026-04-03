@@ -5,7 +5,7 @@ import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.domain.repository.MapDownloadRepository
 import java.util.UUID
 
-class ObserverWorkerProgressUseCase(
+class ObserverWorkerUseCase(
     private val downloadMapRepository: MapDownloadRepository
 ) {
     operator fun invoke(

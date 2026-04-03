@@ -35,11 +35,11 @@ import androidx.compose.ui.unit.dp
 import com.kblack.offlinemap.domain.models.Route
 import com.kblack.offlinemap.domain.models.RouteInstruction
 import com.kblack.offlinemap.domain.utils.RouteTextFormatter
-import com.kblack.offlinemap.presentation.ui.NavigationInstructionFormatter
+import com.kblack.offlinemap.presentation.ui.NavigationInstructionFormat
 import com.kblack.offlinemap.presentation.ui.theme.customColors
 
 @Composable
-fun RouteInstructionsSheetContent(
+fun RouteInstructionsBottomSheet(
     route: Route?,
     isRouting: Boolean,
     modifier: Modifier = Modifier,
@@ -161,7 +161,7 @@ private fun RouteInstructionRow(instruction: RouteInstruction) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = NavigationInstructionFormatter.title(instruction.sign, instruction.name),
+                text = NavigationInstructionFormat.title(instruction.sign, instruction.name),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -178,7 +178,7 @@ private fun RouteInstructionRow(instruction: RouteInstruction) {
 
 @Composable
 private fun RouteSignIcon(sign: Int) {
-    val rotation = NavigationInstructionFormatter.rotationDegrees(sign)
+    val rotation = NavigationInstructionFormat.rotationDegrees(sign)
 
     Box(
         modifier = Modifier

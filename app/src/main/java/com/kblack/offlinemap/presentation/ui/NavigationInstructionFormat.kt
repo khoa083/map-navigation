@@ -2,7 +2,7 @@ package com.kblack.offlinemap.presentation.ui
 
 import com.graphhopper.util.Instruction
 
-object NavigationInstructionFormatter {
+object NavigationInstructionFormat {
 
     fun rotationDegrees(sign: Int): Float {
         return when (sign) {

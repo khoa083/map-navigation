@@ -39,7 +39,6 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
-// ko cần @Inject constructor vì đã tạo trong AppModule
 class MapDownloadRepositoryImpl (
     private val context: Context,
     private val lifecycleProvider: AppLifecycleProvider,

@@ -6,15 +6,15 @@ import com.kblack.offlinemap.domain.repository.RoutingRepository
 import com.kblack.offlinemap.domain.usecase.location.GetCurrentLocationUseCase
 import com.kblack.offlinemap.domain.usecase.location.ObserveCurrentLocationUseCase
 import com.kblack.offlinemap.domain.usecase.routing.CalculateRouteUseCase
-import com.kblack.offlinemap.domain.usecase.routing.CloseRoutingEngineUseCase
-import com.kblack.offlinemap.domain.usecase.routing.InitializeRoutingEngineUseCase
+import com.kblack.offlinemap.domain.usecase.routing.InitializeRouterUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.CancelAllUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.CancelDownloadMapUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.DownloadMapUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetGraphPathUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetStyleJsonPathUseCase
-import com.kblack.offlinemap.domain.usecase.mapdownload.ObserverWorkerProgressUseCase
-import com.kblack.offlinemap.domain.usecase.routing.BuildNavigationSnapshotUseCase
+import com.kblack.offlinemap.domain.usecase.mapdownload.ObserverWorkerUseCase
+import com.kblack.offlinemap.domain.usecase.routing.BuildNavigationUseCase
+import com.kblack.offlinemap.domain.usecase.routing.CloseRouterUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,18 +35,18 @@ object UseCaseModule {
 
     @Provides
     @ViewModelScoped
-    fun provideCloseRoutingEngineUseCase(
+    fun provideInitializeRouterUseCase(
         routingRepository: RoutingRepository
-    ): CloseRoutingEngineUseCase {
-        return CloseRoutingEngineUseCase(routingRepository)
+    ): InitializeRouterUseCase {
+        return InitializeRouterUseCase(routingRepository)
     }
 
     @Provides
     @ViewModelScoped
-    fun provideInitializeRoutingEngineUseCase(
+    fun provideCloseRouterUseCase(
         routingRepository: RoutingRepository
-    ): InitializeRoutingEngineUseCase {
-        return InitializeRoutingEngineUseCase(routingRepository)
+    ): CloseRouterUseCase {
+        return CloseRouterUseCase(routingRepository)
     }
 
     @Provides
@@ -75,10 +75,10 @@ object UseCaseModule {
 
     @Provides
     @ViewModelScoped
-    fun provideObserverWorkerProgressUseCase(
+    fun provideObserverWorkerUseCase(
         downloadMapRepository: MapDownloadRepository
-    ): ObserverWorkerProgressUseCase {
-        return ObserverWorkerProgressUseCase(downloadMapRepository)
+    ): ObserverWorkerUseCase {
+        return ObserverWorkerUseCase(downloadMapRepository)
     }
 
     @Provides
@@ -115,8 +115,8 @@ object UseCaseModule {
 
     @Provides
     @ViewModelScoped
-    fun provideBuildNavigationSnapshotUseCase(): BuildNavigationSnapshotUseCase {
-        return BuildNavigationSnapshotUseCase()
+    fun provideBuildNavigationUseCase(): BuildNavigationUseCase {
+        return BuildNavigationUseCase()
     }
 
 }

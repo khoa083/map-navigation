@@ -30,14 +30,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kblack.offlinemap.domain.models.NavigationSnapshot
 import com.kblack.offlinemap.domain.utils.RouteTextFormatter
-import com.kblack.offlinemap.presentation.ui.NavigationInstructionFormatter
+import com.kblack.offlinemap.presentation.ui.NavigationInstructionFormat
 import com.kblack.offlinemap.presentation.ui.theme.customColors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun NavigationTopInstructionCard(
+fun NavigationMode(
     snapshot: NavigationSnapshot?,
     modifier: Modifier = Modifier,
 ) {
@@ -64,7 +64,7 @@ fun NavigationTopInstructionCard(
                     tint = Color.White,
                     modifier = Modifier
                         .size(28.dp)
-                        .rotate(NavigationInstructionFormatter.rotationDegrees(instruction.sign))
+                        .rotate(NavigationInstructionFormat.rotationDegrees(instruction.sign))
                 )
                 Text(
                     text = RouteTextFormatter.formatDistanceMeters(instruction.distanceMeters),
@@ -81,7 +81,7 @@ fun NavigationTopInstructionCard(
             modifier = Modifier.weight(0.72f)
         ) {
             Text(
-                text = NavigationInstructionFormatter.title(instruction.sign, instruction.name),
+                text = NavigationInstructionFormat.title(instruction.sign, instruction.name),
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
