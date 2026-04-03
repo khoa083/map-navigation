@@ -30,7 +30,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import com.kblack.offlinemap.R
 import com.kblack.offlinemap.presentation.ui.Constant.MAX_ZOOM
 import com.kblack.offlinemap.presentation.ui.Constant.MIN_ZOOM
 import com.kblack.offlinemap.presentation.ui.theme.customColors
@@ -43,6 +46,8 @@ fun BoxScope.MapControls(
     onClickLocation: () -> Unit,
     compassMode: Boolean = false,
     onClickCompass: () -> Unit,
+    mapMode3d: Boolean = false,
+    onClickMapMode3d: () -> Unit,
 ){
     Column(
         modifier = Modifier
@@ -103,21 +108,43 @@ fun BoxScope.MapControls(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Bottom
                 ) {
 
-                    IconButton(
-                        onClick = onClickCompass,
-                        modifier = Modifier
-                            .alpha(0.8f)
-                            .size(52.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.customColors.taskCardBgColor)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom,
                     ) {
-                        Icon(
-                            imageVector = if (compassMode) Icons.Filled.Explore else Icons.Filled.ExploreOff, contentDescription = "Explore",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+
+                        IconButton(
+                            onClick = onClickMapMode3d,
+                            modifier = Modifier
+                                .alpha(0.8f)
+                                .size(52.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.customColors.taskCardBgColor)
+                        ) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(if(mapMode3d) R.drawable.d_on else R.drawable.d_off),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        IconButton(
+                            onClick = onClickCompass,
+                            modifier = Modifier
+                                .alpha(0.8f)
+                                .size(52.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.customColors.taskCardBgColor)
+                        ) {
+                            Icon(
+                                imageVector = if (compassMode) Icons.Filled.Explore else Icons.Filled.ExploreOff, contentDescription = "Explore",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
 
                     IconButton(

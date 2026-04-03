@@ -89,6 +89,7 @@ import org.maplibre.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import timber.log.Timber
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @SuppressLint("SourceLockedOrientationActivity")
@@ -132,6 +133,7 @@ fun MapViewScreen(
     val locationState = rememberUserLocationState(locationProvider)
 
     var compassMode by remember { mutableStateOf(false) }
+    var mapMode3d by remember { mutableStateOf(false) }
 
     val routeCoords = remember(routePoints) {
         routePoints.map { Point.fromLngLat(it.longitude, it.latitude) }
@@ -200,6 +202,15 @@ fun MapViewScreen(
         )
     }
 
+    //todo: FIXME: hard code tilt
+    // control 2D/3D mode by changing tilt.
+    LaunchedEffect(mapMode3d) {
+        camera.animateTo(
+            finalPosition = camera.position.copy(tilt = if (mapMode3d) 55.0 else 0.0),
+            duration = 700.milliseconds
+        )
+    }
+
     LaunchedEffect(Unit) {
         mapViewModel.initializeMap(map)
         if (!hasPermission) {
@@ -212,12 +223,14 @@ fun MapViewScreen(
         }
     }
 
+    //todo: FIXME: hard code tilt, zoom
     LaunchedEffect(Unit) {
         mapViewModel.centerOnCurrentLocation.collect { p ->
             camera.animateTo(
                 CameraPosition(
                     target = Position(latitude = p.latitude, longitude = p.longitude),
-                    zoom = 15.0,
+                    zoom = 16.5,
+                    tilt = if (mapMode3d) 55.0 else 0.0
                 ),
                 duration = 3.seconds
             )
@@ -233,7 +246,7 @@ fun MapViewScreen(
         ) {
             Timber.d("Location update: $currentLocation")
             val speed = currentLocation.speed?.toFloat() ?: 0f
-            val speedThreshold = 2f  // m/s (~7.2 km/h)
+            val speedThreshold = 1f  // 2 m/s (~7.2 km/h)
 
             val updateMode = if (speed >= speedThreshold) {
                 BearingUpdate.TRACK_LOCATION
@@ -281,7 +294,7 @@ fun MapViewScreen(
                 options = MapOptions(
                     ornamentOptions = OrnamentOptions(
                         isLogoEnabled = false,
-                        isAttributionEnabled = false,
+                        isAttributionEnabled = true,
                         isScaleBarEnabled = false,
                         padding = PaddingValues(top = 84.dp)
                     )
@@ -420,7 +433,9 @@ fun MapViewScreen(
                     }
                 },
                 compassMode = compassMode,
-                onClickCompass = {compassMode = !compassMode}
+                onClickCompass = {compassMode = !compassMode},
+                mapMode3d = mapMode3d,
+                onClickMapMode3d = { mapMode3d = !mapMode3d }
             )
 
             if (showSelectPointSheet && !showEndFlagAndTopBar) {
@@ -458,6 +473,7 @@ fun MapViewScreen(
             }
 
             if (uiState.isNavigating) {
+                mapMode3d = true
                 NavigationTopInstructionCard(
                     snapshot = uiState.navigationSnapshot,
                     modifier = Modifier.align(Alignment.TopCenter)
