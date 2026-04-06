@@ -48,7 +48,7 @@ class HomeViewModel @Inject constructor(
     private val ALLOWLIST_FILENAME = "map_allowlist.json"
 
     private val externalFilesDir = context.getExternalFilesDir(null)
-    private val _uiState = MutableStateFlow(createEmptyUiState())
+    private val _uiState = MutableStateFlow(MapManagerUiState())
     val uiState = _uiState.asStateFlow()
 
     fun deleteMap(map: MapModel) {
@@ -93,7 +93,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun setDownloadStatus(map: MapModel, status: MapDownloadStatus) {
+    private fun setDownloadStatus(map: MapModel, status: MapDownloadStatus) {
         val curMapDownloadStatus = uiState.value.mapDownloadStatus.toMutableMap()
         curMapDownloadStatus[map.mapId] = status
 
@@ -101,7 +101,6 @@ class HomeViewModel @Inject constructor(
             status.status == MapDownloadStatusType.FAILED ||
             status.status == MapDownloadStatusType.NOT_DOWNLOADED
         ) {
-//            deleteFileFromExternalFilesDir(map.downloadFileName)
             deleteDirFromExternalFilesDir(map.normalizedName)
         }
 
@@ -251,24 +250,11 @@ class HomeViewModel @Inject constructor(
         return tmpFile.exists()
     }
 
-    private fun createEmptyUiState(): MapManagerUiState {
-        return MapManagerUiState(
-            maps = listOf(),
-            mapDownloadStatus = mapOf(),
-        )
-    }
-
     private fun isFileInExternalFilesDir(fileName: String): Boolean {
         return externalFilesDir?.let { File(it, fileName).exists() } ?: false
     }
 
-    private fun deleteFileFromExternalFilesDir(fileName: String) {
-        if (isFileInExternalFilesDir(fileName)) {
-            File(externalFilesDir, fileName).delete()
-        }
-    }
 
-    // clear folder and all its contents
     private fun deleteDirFromExternalFilesDir(dir: String) {
         if (isFileInExternalFilesDir(dir)) {
             File(externalFilesDir, dir).deleteRecursively()

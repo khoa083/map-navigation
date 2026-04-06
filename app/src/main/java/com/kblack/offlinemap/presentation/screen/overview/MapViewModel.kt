@@ -42,26 +42,26 @@ data class MapUiState(
     val routingOptions: RoutingOptions = RoutingOptions(),
     val navigationSnapshot: NavigationSnapshot? = null,
 
-    val searchResults: List<PlaceCandidate> = emptyList(),
-    val searchQuery: String = "",
+//    val searchResults: List<PlaceCandidate> = emptyList(),
+//    val searchQuery: String = "",
 
     val errorMessage: String? = null,
 
-    val isTracking: Boolean = false,
-    val bearingMode: BearingMode = BearingMode.IGNORE,
+//    val isTracking: Boolean = false,
+//    val bearingMode: BearingMode = BearingMode.IGNORE,
 )
 
-enum class BearingMode {
-    IGNORE,
-    ALWAYS_NORTH,
-    TRACK_LOCATION;
-
-    fun next(): BearingMode = when (this) {
-        IGNORE -> ALWAYS_NORTH
-        ALWAYS_NORTH -> TRACK_LOCATION
-        TRACK_LOCATION -> IGNORE
-    }
-}
+//enum class BearingMode {
+//    IGNORE,
+//    ALWAYS_NORTH,
+//    TRACK_LOCATION;
+//
+//    fun next(): BearingMode = when (this) {
+//        IGNORE -> ALWAYS_NORTH
+//        ALWAYS_NORTH -> TRACK_LOCATION
+//        TRACK_LOCATION -> IGNORE
+//    }
+//}
 
 @HiltViewModel
 class MapViewModel @Inject constructor(

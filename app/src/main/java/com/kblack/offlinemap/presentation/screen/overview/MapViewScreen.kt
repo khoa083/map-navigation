@@ -331,7 +331,6 @@ fun MapViewScreen(
                     Timber.d("[CAPTURE] Map clicked at: $p , $dp")
                     point = GeoCoordinate(latitude = p.latitude, longitude = p.longitude)
 
-                    //todo test: if both points are already selected, clicking on the map should clear them and start new selection
                     if (!showEndFlagAndTopBar) {
                         showSelectPointSheet = true
                     } else {

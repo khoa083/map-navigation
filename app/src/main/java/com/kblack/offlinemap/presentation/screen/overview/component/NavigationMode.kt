@@ -116,12 +116,12 @@ fun NavigationBottomPanel(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                HeaderMetric(value = currentTime, label = "Destination")
-                HeaderMetric(
+                Header(value = currentTime, label = "Destination")
+                Header(
                     value = RouteTextFormatter.formatDurationMillis(remainingDuration),
                     label = "Remaining"
                 )
-                HeaderMetric(
+                Header(
                     value = RouteTextFormatter.formatDistanceMeters(remainingDistance),
                     label = "Left"
                 )
@@ -178,7 +178,7 @@ fun NavigationBottomPanel(
 }
 
 @Composable
-private fun HeaderMetric(value: String, label: String) {
+private fun Header(value: String, label: String) {
     Column(horizontalAlignment = Alignment.Start) {
         Text(
             text = value,

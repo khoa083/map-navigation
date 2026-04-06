@@ -12,7 +12,6 @@ import com.kblack.offlinemap.domain.usecase.mapdownload.CancelDownloadMapUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.DownloadMapUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetGraphPathUseCase
 import com.kblack.offlinemap.domain.usecase.mapdownload.GetStyleJsonPathUseCase
-import com.kblack.offlinemap.domain.usecase.mapdownload.ObserverWorkerUseCase
 import com.kblack.offlinemap.domain.usecase.routing.BuildNavigationUseCase
 import com.kblack.offlinemap.domain.usecase.routing.CloseRouterUseCase
 import dagger.Module
@@ -71,14 +70,6 @@ object UseCaseModule {
         downloadMapRepository: MapDownloadRepository
     ): DownloadMapUseCase {
         return DownloadMapUseCase(downloadMapRepository)
-    }
-
-    @Provides
-    @ViewModelScoped
-    fun provideObserverWorkerUseCase(
-        downloadMapRepository: MapDownloadRepository
-    ): ObserverWorkerUseCase {
-        return ObserverWorkerUseCase(downloadMapRepository)
     }
 
     @Provides

@@ -15,12 +15,6 @@ interface MapDownloadRepository {
 
     fun cancelAll(onComplete: () -> Unit)
 
-    fun observerWorkerProgress(
-        workerId: UUID,
-        map: MapModel,
-        onStatusUpdated: (map: MapModel, status: MapDownloadStatus) -> Unit,
-    )
-
     fun getStyleJsonPath(map: MapModel): String?
     fun getGraphPath(map: MapModel): String?
 

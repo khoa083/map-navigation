@@ -96,7 +96,7 @@ class MapDownloadRepositoryImpl (
             .addListener({ onComplete() }, Executors.newSingleThreadExecutor())
     }
 
-    override fun observerWorkerProgress(
+    private fun observerWorkerProgress(
         workerId: UUID,
         map: MapModel,
         onStatusUpdated: (map: MapModel, status: MapDownloadStatus) -> Unit
