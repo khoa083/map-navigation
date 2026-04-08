@@ -15,13 +15,31 @@ android {
 
     defaultConfig {
         applicationId = "com.kblack.offlinemap"
-        minSdk = 26
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        minSdk = ((rootProject.extra["configSDK"] as Map<*, *>)["min_sdk"] as Int?)!!
+        targetSdk = ((rootProject.extra["configSDK"] as Map<*, *>)["target_sdk"] as Int?)!!
+        // Trên store lấy version dựa theo 2 phần này
+        versionCode = rootProject.extra["versionCode"] as Int
+        versionName = rootProject.extra["versionName"] as String
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
+
+        //BugHandlerActivity get name
+        buildConfigField(
+            "String",
+            "MY_VERSION_NAME",
+            "\"$versionName${rootProject.extra["myVersionName"] as String}\""
+        )
+        buildConfigField(
+            "String",
+            "MY_COMMIT_NAME",
+            "\"${rootProject.extra["commitMessage"] as String}\""
+        )
+        //END-----------------BugHandlerActivity get name
+
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     signingConfigs {
@@ -69,34 +87,10 @@ android {
             excludes += "kotlin-tooling-metadata.json"
             // https://github.com/Kotlin/kotlinx.coroutines?tab=readme-ov-file#avoiding-including-the-debug-infrastructure-in-the-resulting-apk
             excludes += "DebugProbesKt.bin"
-        }
-    }
-
-    defaultConfig {
-        applicationId = "com.kblack.offlinemap"
-        minSdk = ((rootProject.extra["configSDK"] as Map<*, *>)["min_sdk"] as Int?)!!
-        targetSdk = ((rootProject.extra["configSDK"] as Map<*, *>)["target_sdk"] as Int?)!!
-        // Trên store lấy version dựa theo 2 phần này
-        versionCode = rootProject.extra["versionCode"] as Int
-        versionName = rootProject.extra["versionName"] as String
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        //BugHandlerActivity get name
-        buildConfigField(
-            "String",
-            "MY_VERSION_NAME",
-            "\"$versionName${rootProject.extra["myVersionName"] as String}\""
-        )
-        buildConfigField(
-            "String",
-            "MY_COMMIT_NAME",
-            "\"${rootProject.extra["commitMessage"] as String}\""
-        )
-        //END-----------------BugHandlerActivity get name
-
-        vectorDrawables {
-            useSupportLibrary = true
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/NOTICE.md"
+            )
         }
     }
 
@@ -128,14 +122,6 @@ android {
 
     androidResources {
         noCompress.add("pmtiles")
-    }
-    packaging {
-        resources {
-            excludes += setOf(
-                "META-INF/LICENSE.md",
-                "META-INF/NOTICE.md"
-            )
-        }
     }
 
 }
