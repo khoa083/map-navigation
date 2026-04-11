@@ -90,7 +90,6 @@ import kotlin.time.Duration.Companion.seconds
 @SuppressLint("SourceLockedOrientationActivity")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//todo FIXME: Refactor this method to reduce its Cognitive Complexity from 75 to the 15 allowed
 fun MapViewScreen(
     map: MapModel,
     mapViewModel: MapViewModel = hiltViewModel(),

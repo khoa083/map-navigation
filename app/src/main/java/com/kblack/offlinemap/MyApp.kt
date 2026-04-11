@@ -17,14 +17,10 @@ class MyApp: Application(), Thread.UncaughtExceptionHandler  {
         if (BuildConfig.DEBUG) Thread.setDefaultUncaughtExceptionHandler(this)
     }
 
-    companion object {
-        private const val TAG = "KblackApplication"
-    }
-
     override fun uncaughtException(t: Thread, e: Throwable) {
         val exceptionMessage = Log.getStackTraceString(e)
         val threadName = Thread.currentThread().name
-        Timber.tag(TAG).e("Error on thread $threadName:\n $exceptionMessage")
+        Timber.tag("[CAPTURE-ERROR]").e("Error on thread $threadName:\n $exceptionMessage")
         if(BuildConfig.DEBUG) {
             val intent = Intent(this, BugHandlerActivity::class.java)
             intent.putExtra("exception_message", exceptionMessage)
