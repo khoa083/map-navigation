@@ -56,7 +56,7 @@ tar_version = "1.28.0"
 mockk = "1.14.9"
 slf4jAndroid = "1.7.36"
 coroutines-test = "1.10.2"
-
+turbine-test = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -129,6 +129,7 @@ tar = { module = "org.apache.commons:commons-compress", version.ref = "tar_versi
 konfetti-compose = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfettiCompose" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-test" }
+turbine-test = { module = "app.cash.turbine:turbine", version.ref = "turbine-test" }
 
 [bundles]
 hilt = ["hilt-android", "hilt-navigation-compose"]
