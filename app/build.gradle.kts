@@ -128,13 +128,6 @@ android {
 
 }
 
-tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
-    reports.html.required.set(true)
-    reports.html.outputLocation.set(rootProject.layout.projectDirectory.dir("reports/tests/$name/html"))
-    reports.junitXml.required.set(true)
-    reports.junitXml.outputLocation.set(rootProject.layout.projectDirectory.dir("reports/tests/$name/xml"))
-}
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
