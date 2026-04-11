@@ -191,3 +191,5 @@ dependencies {
 
     releaseImplementation(libs.chucker.release)
 }
+
+apply(from = "jacoco.gradle.kts")
