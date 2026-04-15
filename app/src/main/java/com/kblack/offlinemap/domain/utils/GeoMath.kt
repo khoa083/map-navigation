@@ -9,6 +9,7 @@ import kotlin.math.sqrt
 // https://github.com/junjunguo/PocketMaps/blob/master/PocketMaps/app/src/main/java/com/junjunguo/pocketmaps/util/GeoMath.java
 // https://vi.wikipedia.org/wiki/Kho%E1%BA%A3ng_c%C3%A1ch_Euclid\
 // https://en.wikipedia.org/wiki/Haversine_formula
+// https://www.movable-type.co.uk/scripts/latlong.html
 // The original project used Degree Approximation to calculate the distance.
 // Haversine
 object GeoMath {
