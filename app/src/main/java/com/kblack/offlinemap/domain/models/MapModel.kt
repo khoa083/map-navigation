@@ -27,7 +27,6 @@ data class MapModel(
     val sizeInBytes: Long = 0L,
     val continent: String = "",
     val allow: Boolean = true,
-    val localFileRelativeDirPathOverride: String = "",
     val normalizedName: String = "",
     val downloadFileName: String = "",
     val pmtilesName: String = "",

@@ -120,15 +120,13 @@ private fun MapItem(
                     modifier = Modifier.weight(1f),
                 )
                 Row(verticalAlignment = Alignment.Top) {
-                    if (mapOff.localFileRelativeDirPathOverride.isEmpty()) {
-                        DeleteMapButton(
-                            mapOff = mapOff,
-                            homeViewModel = homeViewModel,
-                            downloadStatus = downloadStatus,
-                            showDeleteBtn = showDeleteButton && isAllowed,
-                            modifier = Modifier.offset(y = (-12).dp, x = 0.dp)
-                        )
-                    }
+                    DeleteMapButton(
+                        mapOff = mapOff,
+                        homeViewModel = homeViewModel,
+                        downloadStatus = downloadStatus,
+                        showDeleteBtn = showDeleteButton && isAllowed,
+                        modifier = Modifier.offset(y = (-12).dp, x = 0.dp)
+                    )
                 }
             }
             MarkdownText(

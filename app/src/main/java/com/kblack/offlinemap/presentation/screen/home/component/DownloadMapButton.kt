@@ -175,7 +175,7 @@ fun DownloadMapButton(
                 }
             ) {
                 val textColor =
-                    if (!downloadSucceeded && mapOff.localFileRelativeDirPathOverride.isEmpty()) {
+                    if (!downloadSucceeded) {
                         MaterialTheme.colorScheme.onSurface
                     } else {
                         Color.White

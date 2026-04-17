@@ -7,6 +7,7 @@ import com.kblack.offlinemap.data.model.MapAllowlist
 import com.kblack.offlinemap.data.remote.api.MapListRemoteDataSource
 import com.kblack.offlinemap.domain.models.MapModel
 import com.kblack.offlinemap.domain.repository.MapAllowlistRepository
+import timber.log.Timber
 
 class MapAllowlistRepositoryImpl(
     private val remoteDataSource: MapListRemoteDataSource,
