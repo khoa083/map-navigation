@@ -38,8 +38,10 @@
 * View maps offline without an internet connection.
 * Supports rotate, zoom, and 2D/3D compass mode toggles.
 * Find routes using the GraphHopper.
-* Navigating with Haversine formula for distance calculation.
-* Detects wrong directions and automatically recalculates the route.
+* Fully offline navigation — no internet required after map download.
+* Auto-recalculate route when off track (> 30m deviation).
+* Resume interrupted map downloads — no re-download needed.
+* Supports car, motorcycle profiles.
   
 ## Project Status
 
