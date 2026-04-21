@@ -110,7 +110,6 @@ fun MapViewScreen(
         }
     }
 
-    // State for exit confirmation dialog
     var showExitDialog by remember { mutableStateOf(false) }
 
     val uiState by mapViewModel.uiState.collectAsStateWithLifecycle()
