@@ -101,6 +101,8 @@ class MapDownloadRepositoryImpl (
         var receivedBytes = 0L
         var totalBytes = 0L
 
+        val tarZstFile = File(externalFilesDir, "${map.normalizedName}/${map.downloadFileName}")
+
         if (isMapPartiallyDownloaded(map)) {
             status = MapDownloadStatusType.PARTIALLY_DOWNLOADED
             val tmpFile = File(
@@ -108,6 +110,10 @@ class MapDownloadRepositoryImpl (
                 "${map.normalizedName}/${map.downloadFileName}.$TMP_FILE_EXT"
             )
             receivedBytes = tmpFile.length()
+            totalBytes = map.totalBytes
+        } else if (tarZstFile.exists() && map.downloadFileName.endsWith(".tar.zst")) {
+            status = MapDownloadStatusType.PARTIALLY_DOWNLOADED
+            receivedBytes = map.totalBytes
             totalBytes = map.totalBytes
         } else if (isMapDownloaded(map)) {
             status = MapDownloadStatusType.SUCCEEDED

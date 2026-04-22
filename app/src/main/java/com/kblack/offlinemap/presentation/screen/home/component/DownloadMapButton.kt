@@ -84,8 +84,10 @@ fun DownloadMapButton(
     val inProgress = downloadStatus?.status == MapDownloadStatusType.IN_PROGRESS
     val downloadSucceeded = downloadStatus?.status == MapDownloadStatusType.SUCCEEDED
     val isPartiallyDownloaded = downloadStatus?.status == MapDownloadStatusType.PARTIALLY_DOWNLOADED
+    val isUnzipping = downloadStatus?.status == MapDownloadStatusType.UNZIPPING
+
     val showDownloadProgress =
-        !downloadSucceeded && (downloadStarted || checkingToken || inProgress || isPartiallyDownloaded)
+        !downloadSucceeded && (downloadStarted || checkingToken || inProgress || isPartiallyDownloaded || isUnzipping)
     var curDownloadProgress: Float
 
     val permissionLauncher =

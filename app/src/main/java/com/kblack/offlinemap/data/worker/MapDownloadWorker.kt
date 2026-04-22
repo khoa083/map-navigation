@@ -73,6 +73,26 @@ class MapDownloadWorker (context: Context, params: WorkerParameters) :
 
                     setForeground(createForegroundInfo(0,mapName))
 
+                    val outputDir = File(
+                        applicationContext.getExternalFilesDir(null),
+                        mapDir
+                    )
+                    val outputTmpFile = File(
+                        applicationContext.getExternalFilesDir(null),
+                        listOf(mapDir, "${fileName}.$TMP_FILE_EXT").joinToString(File.separator)
+                    )
+
+                    val originalFilePath = outputTmpFile.absolutePath.replace(".$TMP_FILE_EXT", "")
+                    val originalFile = File(originalFilePath)
+
+                    if (originalFile.exists() && fileName.endsWith(".tar.zst")) {
+                        setProgress(Data.Builder().putBoolean(KEY_MAP_START_UNZIPPING, true).build())
+                        setForeground(createForegroundInfo(progress = 100, mapName = mapName, isUnzipping = true))
+                        extractTarZst(srcFile = originalFile, destDir = outputDir)
+                        patchStyleJson(context = applicationContext, destDir = outputDir)
+                        return@withContext Result.success()
+                    }
+
                     var downloadedBytes = 0L
                     val bytesReadSizeBuffer: MutableList<Long> = mutableListOf()
                     val bytesReadLatencyBuffer: MutableList<Long> = mutableListOf()
@@ -81,37 +101,10 @@ class MapDownloadWorker (context: Context, params: WorkerParameters) :
 
                     val connection = url.openConnection() as HttpURLConnection
 
-                    // → .../files/vn_map/v1.0/vn_map.tar.zst
-//                    val outputDir =
-//                        File(
-//                            applicationContext.getExternalFilesDir(null),
-//                            listOf(mapDir, version).joinToString(separator = File.separator),
-//                        )
-                    val outputDir = File(
-                        applicationContext.getExternalFilesDir(null),
-                        mapDir
-                    )
-
                     if (!outputDir.exists()) {
                         outputDir.mkdirs()
                     }
 
-//                    externalFilesDir/
-//                    └── vn_map/
-//                    ├── font/
-//                    ├── graph-cache/
-//                    └── vn.pmtiles
-//                    val outputTmpFile =
-//                        File(
-//                            applicationContext.getExternalFilesDir(null),
-//                            listOf(mapDir, version, "${fileName}.$TMP_FILE_EXT")
-//                                .joinToString(separator = File.separator),
-//                        )
-
-                    val outputTmpFile = File(
-                        applicationContext.getExternalFilesDir(null),
-                        listOf(mapDir, "${fileName}.$TMP_FILE_EXT").joinToString(File.separator)
-                    )
                     val outputFileBytes = outputTmpFile.length()
 
                     if (outputFileBytes > 0) {
@@ -193,8 +186,7 @@ class MapDownloadWorker (context: Context, params: WorkerParameters) :
                     outputStream.close()
                     inputStream.close()
 
-                    val originalFilePath = outputTmpFile.absolutePath.replace(".$TMP_FILE_EXT", "")
-                    val originalFile = File(originalFilePath)
+
                     if (originalFile.exists()) {
                         originalFile.delete()
                     }
@@ -202,6 +194,7 @@ class MapDownloadWorker (context: Context, params: WorkerParameters) :
 
                     if (fileName.endsWith(".tar.zst")) {
                         setProgress(Data.Builder().putBoolean(KEY_MAP_START_UNZIPPING, true).build())
+                        setForeground(createForegroundInfo(progress = 100, mapName = mapName, isUnzipping = true))
                         extractTarZst(srcFile = originalFile, destDir = outputDir)
                         patchStyleJson(context = applicationContext, destDir = outputDir)
                     }
@@ -220,12 +213,12 @@ class MapDownloadWorker (context: Context, params: WorkerParameters) :
         return createForegroundInfo(0)
     }
 
-    private fun createForegroundInfo(progress: Int, mapName: String? = null): ForegroundInfo {
+    private fun createForegroundInfo(progress: Int, mapName: String? = null, isUnzipping: Boolean = false): ForegroundInfo {
         var title = "Downloading map"
         if (mapName != null) {
             title = "Downloading \"$mapName\""
         }
-        val content = "Downloading in progress: $progress%"
+        val content = if (isUnzipping) "Unzipping..." else "Downloading in progress: $progress%"
 
         val intent =
             Intent(applicationContext, Class.forName("com.kblack.offlinemap.presentation.MainActivity")).apply {
@@ -246,7 +239,7 @@ class MapDownloadWorker (context: Context, params: WorkerParameters) :
                 .setContentText(content)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setOngoing(true) // Makes the notification non-dismissable
-                .setProgress(100, progress, false)
+                .setProgress(100, progress, isUnzipping)
                 .setContentIntent(pendingIntent)
                 .build()
 
