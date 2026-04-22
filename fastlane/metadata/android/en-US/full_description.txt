@@ -1,4 +1,5 @@
 <h3>Features</h3>
+<p>Offline Map Navigation is an offline navigation app for Android that utilizes the GraphHopper library for routing algorithms and MapLibre for map rendering. (Currently only supports Vietnam.)</p>
 <ul>
     <li><strong>View maps offline</strong> — Access maps without an internet connection.</li>
     <li><strong>Interactive Map Controls</strong> — Supports rotate, zoom, and 2D/3D compass mode toggles.</li>
