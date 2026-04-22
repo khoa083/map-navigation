@@ -132,7 +132,7 @@ jobs:
           CHANGELOG_FILE="$CHANGELOG_DIR/${VERSION_CODE}.txt"
           
           COMMIT_MSG="${{ github.event.head_commit.message }}"
-          CHANGELOG_TEXT="${COMMIT_MSG#*[release]}"
+          CHANGELOG_TEXT="${COMMIT_MSG#*\[release\]}"
           CHANGELOG_TEXT="${CHANGELOG_TEXT#"${CHANGELOG_TEXT%%[! ]*}"}"
           CHANGELOG_TEXT="${CHANGELOG_TEXT:0:490}"
           
