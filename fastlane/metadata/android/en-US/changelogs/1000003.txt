@@ -1,3 +1,1 @@
-Update README and metadata, fix foot route. Merge pull request #2 from khoa083/khoa083-patch-1
-
-[release] Update README and metadata, fix foot route
+Update README and metadata, fix foot route.
