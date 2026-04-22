@@ -14,7 +14,7 @@ val configSDK = mapOf(
     )
 
 val versionInfo = mapOf(
-    "major" to 1
+    "major" to 1,
     "minor" to 0,
     "patch" to 0,
     "build" to 3
