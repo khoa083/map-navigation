@@ -52,6 +52,7 @@ class RoutingRepositoryImpl(
                     CHProfile("car"),
                     CHProfile("motorcycle")
                 )
+                .setDisablingAllowed(true)
 
             val loaded = localHopper.load(graphDir.absolutePath)
             if (!loaded) {
@@ -77,6 +78,11 @@ class RoutingRepositoryImpl(
         )
             .setProfile(options.travelMode.vehicleKey)
             .setAlgorithm(Parameters.Algorithms.DIJKSTRA_BI)
+
+        if (options.travelMode == TravelMode.Foot) {
+            request.hints.putObject("ch.disable", true)
+        }
+
         request.hints.putObject(Parameters.Routing.INSTRUCTIONS, true)
 
         if (options.instructionsEnabled) {

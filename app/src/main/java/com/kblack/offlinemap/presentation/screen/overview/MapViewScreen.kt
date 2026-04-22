@@ -47,6 +47,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kblack.offlinemap.domain.models.GeoCoordinate
 import com.kblack.offlinemap.domain.models.MapModel
+import com.kblack.offlinemap.domain.models.TravelMode
 import com.kblack.offlinemap.presentation.base.BaseContainer
 import com.kblack.offlinemap.presentation.screen.overview.component.MapControls
 import com.kblack.offlinemap.presentation.screen.overview.component.rememberMapLocationAccessState
@@ -68,6 +69,7 @@ import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.expressions.dsl.nil
 import org.maplibre.compose.expressions.value.LineCap
 import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.layers.CircleLayer
@@ -142,6 +144,10 @@ fun MapViewScreen(
     }
 
     val progress = remember(routeCoords) { Animatable(0f) }
+
+    val isDashLine = remember(uiState.route) {
+        uiState.routingOptions.travelMode == TravelMode.Foot
+    }
 
     LaunchedEffect(routeCoords) {
         progress.snapTo(0f)
@@ -362,6 +368,7 @@ fun MapViewScreen(
                             opacity = const(0.6f),
                             cap = const(LineCap.Round),
                             join = const(LineJoin.Round),
+                            dasharray = if (isDashLine) const(listOf(1f, 1.5f)) else nil(),
                         )
                     }
                 }
