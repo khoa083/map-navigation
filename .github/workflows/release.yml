@@ -45,6 +45,22 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
+      - name: Check version not duplicated
+        run: |
+          MAJOR=$(grep -E '"major" to [0-9]+' build.gradle.kts | grep -oE '[0-9]+' | head -1)
+          MINOR=$(grep -E '"minor" to [0-9]+' build.gradle.kts | grep -oE '[0-9]+' | head -1)
+          PATCH=$(grep -E '"patch" to [0-9]+' build.gradle.kts | grep -oE '[0-9]+' | head -1)
+          BUILD=$(grep -E '"build" to [0-9]+' build.gradle.kts | grep -oE '[0-9]+' | head -1)
+          MAJOR=${MAJOR:-1}; MINOR=${MINOR:-0}; PATCH=${PATCH:-0}; BUILD=${BUILD:-1}
+          VERSION_CODE=$((MAJOR * 1000000 + MINOR * 10000 + PATCH * 100 + BUILD))
+          CHANGELOG_FILE="fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
+
+          if [ -f "$CHANGELOG_FILE" ]; then
+            echo "::error::${VERSION_CODE}.txt already exists! Bump versionCode first."
+            exit 1
+          fi
+          echo "Version $VERSION_CODE is new. Proceeding with build..."
+
       - name: Decode Keystore
         run: echo "${{ secrets.RELEASE_STORE_FILE }}" | base64 -di > signing-key.jks
 
@@ -111,22 +127,22 @@ jobs:
           mkdir -p "$CHANGELOG_DIR"
           
           VERSION_CODE="${{ steps.version.outputs.version_code }}"
-
+          CHANGELOG_FILE="$CHANGELOG_DIR/${VERSION_CODE}.txt"
+          
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           CHANGELOG_TEXT="${COMMIT_MSG#*[release]}"
-          CHANGELOG_TEXT="${CHANGELOG_TEXT#"${CHANGELOG_TEXT%%[! ]*}"}"  # trim leading space
-
+          CHANGELOG_TEXT="${CHANGELOG_TEXT#"${CHANGELOG_TEXT%%[! ]*}"}"
           CHANGELOG_TEXT="${CHANGELOG_TEXT:0:490}"
-
-          echo "$CHANGELOG_TEXT" > "$CHANGELOG_DIR/${VERSION_CODE}.txt"
-
-          echo "Created changelog: $CHANGELOG_DIR/${VERSION_CODE}.txt"
-          cat "$CHANGELOG_DIR/${VERSION_CODE}.txt"
-
+          
+          echo "$CHANGELOG_TEXT" > "$CHANGELOG_FILE"
+          
+          echo "Created changelog: $CHANGELOG_FILE"
+          cat "$CHANGELOG_FILE"
+          
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "$CHANGELOG_DIR/${VERSION_CODE}.txt"
-          git commit -m "chore: add changelog for $VERSION_CODE" || echo "No changes to commit"
+          git add "$CHANGELOG_FILE"
+          git commit -m "chore: add changelog for ${VERSION_CODE}" || echo "No changes to commit"
           git push
 
       - name: Create Release
