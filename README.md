@@ -14,6 +14,15 @@
 </p> -->
 
 <div align="center">
+    <a href="https://github.com/khoa083/map-offline-navigation/releases">
+    <img src="https://img.shields.io/github/v/release/khoa083/map-offline-navigation">
+  </a>
+  <a href="https://github.com/khoa083/map-offline-navigation/releases">
+    <img src="https://img.shields.io/github/downloads/khoa083/map-offline-navigation/total">
+  </a>
+</div>
+
+<div align="center">
   <!-- <a href="https://github.com/khoa083/map-offline-navigation/">
     <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80" alt="Get it at IzzyOnDroid">
   </a> -->
