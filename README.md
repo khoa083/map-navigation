@@ -23,7 +23,7 @@
 </div>
 
 <div align="center">
-  <a href="https://apt.izzysoft.de/packages/map-offline-navigation/">
+  <a href="https://apt.izzysoft.de/packages/com.kblack.offlinemap">
     <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80" alt="Get it at IzzyOnDroid">
   </a>
   <a href="https://github.com/khoa083/map-offline-navigation/">
