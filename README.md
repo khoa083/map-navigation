@@ -23,9 +23,9 @@
 </div>
 
 <div align="center">
-  <!-- <a href="https://github.com/khoa083/map-offline-navigation/">
+  <a href="https://apt.izzysoft.de/packages/map-offline-navigation/">
     <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="80" alt="Get it at IzzyOnDroid">
-  </a> -->
+  </a>
   <a href="https://github.com/khoa083/map-offline-navigation/">
     <img src="https://github.com/machiav3lli/oandbackupx/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">
   </a>
@@ -72,6 +72,7 @@
 * [GraphHopper](https://www.graphhopper.com/) for the routing engine.
 * [MapLibre](https://maplibre.org/) for the map rendering library.
 * [OpenStreetMap](https://www.openstreetmap.org/) contributors for the map data.
+* [OpenFreeMap](https://openfreemap.org/) for the map tile hosting and styles.
 * This project is referenced from and inspired by [PocketMaps](https://github.com/junjunguo/PocketMaps) by [junjunguo](https://github.com/junjunguo). It has been modernized and completely rewritten using **Clean Architecture**, **MVVM**, **Kotlin**, and **Jetpack Compose**.
 
 ## Architecture
