@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-#  workflow_dispatch: {}
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -23,9 +23,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
-#          token: ${{ secrets.GITHUB_TOKEN }}
-          token: ${{ secrets.BOT_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+#          token: ${{ secrets.BOT_PAT }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -54,13 +55,12 @@ jobs:
           BUILD=$(grep -E '"build" to [0-9]+' build.gradle.kts | grep -oE '[0-9]+' | head -1)
           MAJOR=${MAJOR:-1}; MINOR=${MINOR:-0}; PATCH=${PATCH:-0}; BUILD=${BUILD:-1}
           VERSION_CODE=$((MAJOR * 1000000 + MINOR * 10000 + PATCH * 100 + BUILD))
-          CHANGELOG_FILE="fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
+          TAG_NAME="v${MAJOR}.${MINOR}.${PATCH}-${VERSION_CODE}"
 
-          if [ -f "$CHANGELOG_FILE" ]; then
-            echo "::error::${VERSION_CODE}.txt already exists! Bump versionCode first."
+          if git ls-remote --tags origin | grep -q "refs/tags/${TAG_NAME}$"; then
+            echo "::error::Tag ${TAG_NAME} already exists!"
             exit 1
           fi
-          echo "Version $VERSION_CODE is new. Proceeding with build..."
 
       - name: Decode Keystore
         run: echo "${{ secrets.RELEASE_STORE_FILE }}" | base64 -di > signing-key.jks
@@ -122,40 +122,12 @@ jobs:
           echo "apk_path=${NEW_APK_NAME}" >> $GITHUB_OUTPUT
           echo "apk_name=${NEW_APK_NAME}" >> $GITHUB_OUTPUT
 
-      - name: Generate IzzyOnDroid changelog
-        id: changelog
-        run: |
-          CHANGELOG_DIR="fastlane/metadata/android/en-US/changelogs"
-          mkdir -p "$CHANGELOG_DIR"
-          
-          VERSION_CODE="${{ steps.version.outputs.version_code }}"
-          CHANGELOG_FILE="$CHANGELOG_DIR/${VERSION_CODE}.txt"
-          
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          CHANGELOG_TEXT="${COMMIT_MSG#*\[release\]}"
-          CHANGELOG_TEXT="${CHANGELOG_TEXT#"${CHANGELOG_TEXT%%[! ]*}"}"
-          CHANGELOG_TEXT="${CHANGELOG_TEXT:0:490}"
-          
-          echo "changelog_text<<EOF" >> $GITHUB_OUTPUT
-          echo "${CHANGELOG_TEXT}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          
-          echo "$CHANGELOG_TEXT" > "$CHANGELOG_FILE"
-          
-          echo "Created changelog: $CHANGELOG_FILE"
-          cat "$CHANGELOG_FILE"
-          
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "$CHANGELOG_FILE"
-          git commit -m "chore: add changelog for ${VERSION_CODE}" || echo "No changes to commit"
-          git push
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag_name }}
           name: ${{ steps.version.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
           body: |
 
             **Build Info:**
@@ -165,7 +137,6 @@ jobs:
             - Build Date: ${{ steps.version.outputs.date }}
 
             **Changes:**
-            ${{ steps.changelog.outputs.changelog_text }}
 
           files: ${{ steps.apk_file.outputs.apk_path }}
           draft: false
@@ -186,6 +157,6 @@ jobs:
       - name: Notify on success
         if: success()
         run: |
-          echo "::notice::✅ Build completed successfully!"
+          echo "::notice::Build completed successfully!"
           echo "::notice::Release created: ${{ steps.version.outputs.tag_name }}"
           echo "::notice::APK: ${{ steps.apk_file.outputs.apk_name }}"
