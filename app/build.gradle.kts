@@ -38,16 +38,20 @@ android {
         }
     }
 
-    signingConfigs {
-        create("release") {
-            val propFile = rootProject.file("local.properties")
-            val props = Properties()
-            if (propFile.exists()) propFile.inputStream().use { props.load(it) }
+    val releasePropertiesFile = rootProject.file("release.properties")
+    val useReleaseKeystore = releasePropertiesFile.exists()
 
-            storeFile = file(System.getenv("RELEASE_STORE_FILE") ?: props.getProperty("RELEASE_STORE_FILE") ?: "debug.keystore")
-            storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: props.getProperty("RELEASE_STORE_PASSWORD") ?: ""
-            keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: props.getProperty("RELEASE_KEY_ALIAS") ?: ""
-            keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: props.getProperty("RELEASE_KEY_PASSWORD") ?: ""
+    if(useReleaseKeystore) {
+        val props = Properties()
+        releasePropertiesFile.inputStream().use { props.load(it) }
+
+        signingConfigs {
+            create("release") {
+                storeFile = file(props.getProperty("RELEASE_STORE_FILE"))
+                storePassword = props.getProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = props.getProperty("RELEASE_KEY_ALIAS")
+                keyPassword = props.getProperty("RELEASE_KEY_PASSWORD")
+            }
         }
     }
 
@@ -77,6 +81,7 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
+            keepDebugSymbols.add("**/*.so")
         }
         resources {
             excludes += "META-INF/*.version"
@@ -101,7 +106,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            if (useReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isPseudoLocalesEnabled = true
