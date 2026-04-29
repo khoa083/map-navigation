@@ -54,14 +54,12 @@
 * Find routes using the GraphHopper.
 * Fully offline navigation — no internet required after map download.
 * Auto-recalculate route when off track (> 30m deviation).
-* Resume interrupted map downloads — no re-download needed.
-* Supports car, motorcycle profiles.
+* Supports car, motorcycle profiles, foot.
   
 ## Project Status
 
 | Feature | Status |
 | :--- | :---: |
-| **Map Theme** | 🟡 In Progress |
 | **Voice Guidance** | 🟡 In Progress |
 | **Speed Limits** | 🔴 Planned |
 | **Lock Screen Navigation** | 🔴 Planned |
