@@ -1,0 +1,3 @@
+- Add default location (Fix ProGuard/R8 obfuscation issues).
+- Fixed map zoom levels.
+- Added maps for Turkey and India.

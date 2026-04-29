@@ -16,12 +16,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.kblack.offlinemap.domain.models.MapModel
-import com.kblack.offlinemap.presentation.model.DefaultLocation
 import com.kblack.offlinemap.presentation.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlin.math.ln
 import kotlin.math.pow
 
@@ -89,10 +88,13 @@ fun ensureValidFileName(fileName: String): String {
 }
 
 // todo: Fixme: move to data layer
+@Serializable
+data class DefaultLocation(
+    val name: String,
+    val lat: Double,
+    val lng: Double,
+)
 fun loadDefaultLocations(ctx: Context): Map<String, DefaultLocation> {
-    val json = ctx.assets.open("default_location.json")
-        .bufferedReader().readText()
-    val type = object : TypeToken<Map<String, DefaultLocation>>() {}
-        .type
-    return Gson().fromJson(json, type)
+    val json = ctx.assets.open("default_location.json").bufferedReader().readText()
+    return Json.decodeFromString(json)
 }
