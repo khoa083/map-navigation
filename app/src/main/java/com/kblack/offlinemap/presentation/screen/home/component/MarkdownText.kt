@@ -39,7 +39,6 @@ fun MarkdownText(
                     letterSpacing = 0.2.sp,
                 )
         ) {
-            //todo: FIXME - Causes of lag when scrolling
             RichText(
                 modifier = modifier,
                 style =

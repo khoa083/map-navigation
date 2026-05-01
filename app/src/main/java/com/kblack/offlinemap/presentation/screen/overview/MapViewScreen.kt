@@ -36,6 +36,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -207,21 +208,6 @@ fun MapViewScreen(
         )
     }
 
-    // fix crash Location punk
-//    val locationState = rememberMapLocationState(locationAccessState.hasPermission)
-//    val sheetState = rememberBottomSheetScaffoldState()
-//
-//    val locationProvider = key(locationAccessState.hasPermission) {
-//        if (locationAccessState.hasPermission) {
-//            rememberDefaultLocationProvider()
-//        } else {
-//            rememberNullLocationProvider()
-//        }
-//    }
-//    val locationStateMaplibre = rememberUserLocationState(locationProvider)
-//    val hasMapLibreLocation = locationStateMaplibre.location != null
-
-
     val camera =
         rememberCameraState(
             firstPosition =
@@ -288,19 +274,33 @@ fun MapViewScreen(
         }
     }
 
+    if(compassMode) {
 
-    if (compassMode) {
+        val targetHeading = remember { mutableStateOf<Float?>(null) }
         val heading by rememberCompassMode()
 
-        LaunchedEffect(uiState.isNavigating) {
-            if (!compassMode || uiState.isNavigating) return@LaunchedEffect
-            snapshotFlow { heading }.collect { target ->
-                val targetBearing = target ?: return@collect
-                val current = camera.position.bearing.toFloat()
-                val delta = shortestAngleDelta(current, targetBearing)
-                if (abs(delta) > 1f) {
-                    val next = normalizeDegree(current + delta * 0.2f)
-                    camera.position = camera.position.copy(bearing = next.toDouble())
+        DisposableEffect(Unit) {
+            onDispose { targetHeading.value = null }
+        }
+
+
+        LaunchedEffect(Unit) {
+            snapshotFlow { heading }.collect { h ->
+                targetHeading.value = h
+            }
+        }
+
+        LaunchedEffect(camera, uiState.isNavigating) {
+            if (uiState.isNavigating) return@LaunchedEffect
+            var current = camera.position.bearing.toFloat()
+            while (true) {
+                withFrameMillis {
+                    val target = targetHeading.value ?: return@withFrameMillis
+                    val delta = shortestAngleDelta(current, target)
+                    if (abs(delta) > 0.05f) {
+                        current = normalizeDegree(current + delta * 0.2f)
+                        camera.position = camera.position.copy(bearing = current.toDouble())
+                    }
                 }
             }
         }
